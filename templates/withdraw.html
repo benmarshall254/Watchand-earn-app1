@@ -1,57 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Withdraw Earnings</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #f4f4f4;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            max-width: 500px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #333;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        .message {
-            margin-top: 15px;
-            color: green;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Withdraw Earnings</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f3;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+    input, button {
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: green;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 20px;
+      padding: 10px;
+      background: #d4edda;
+      color: #155724;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .ad-container {
+      margin: 30px 0;
+      text-align: center;
+    }
+    /* Popup Ad Style */
+    #popup-ad {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      padding: 20px;
+      z-index: 9999;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      border-radius: 10px;
+    }
+    #close-popup {
+      margin-top: 10px;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-    <h2>💰 Withdraw Your Earnings</h2>
-    <form method="POST">
-        <label for="method">Payment Method</label>
-        <select name="method" id="method" required>
-            <option value="M-Pesa">M-Pesa</option>
-            <option value="PayPal">PayPal</option>
-        </select>
 
-        <label for="account">Account / Phone</label>
-        <input type="text" name="account" id="account" placeholder="Enter number or email" required>
+<h1>💸 Withdraw Your Earnings</h1>
 
-        <button type="submit">Request Withdrawal</button>
-    </form>
+<p><strong>Minimum Withdrawal:</strong> $150</p>
+<p><strong>Your Current Balance:</strong> ${{ '%.2f' % earnings }}</p>
 
-    {% if message %}
-        <div class="message">{{ message }}</div>
-    {% endif %}
+<!-- 🔼 Top AdSense Ad -->
+<div class="ad-container">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+          crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-6332657251575161"
+       data-ad-slot="8486290217"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
+
+<form method="POST" action="/withdraw">
+  <input type="text" name="name" placeholder="Your Full Name" required>
+  <input type="text" name="method" placeholder="Payment Method (PayPal or M-Pesa)" required>
+  <input type="text" name="details" placeholder="PayPal Email or M-Pesa Number" required>
+  <button type="submit">Request Withdrawal</button>
+</form>
+
+{% if message %}
+<div class="message">{{ message }}</div>
+{% endif %}
+
+<!-- 🔽 Bottom AdSense Ad -->
+<div class="ad-container">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+          crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-6332657251575161"
+       data-ad-slot="8486290217"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<!-- 🪟 Popup Ad -->
+<div id="popup-ad">
+  <p><strong>Sponsored Ad</strong></p>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+          crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-6332657251575161"
+       data-ad-slot="8486290217"
+       data-ad-format="rectangle"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  <button id="close-popup">Close</button>
+</div>
+
+<script>
+  // Show popup ad 6 seconds after page load
+  window.onload = function () {
+    setTimeout(() => {
+      document.getElementById('popup-ad').style.display = 'block';
+    }, 6000);
+
+    document.getElementById('close-popup').onclick = () => {
+      document.getElementById('popup-ad').style.display = 'none';
+    };
+  };
+</script>
+
 </body>
 </html>
