@@ -102,6 +102,46 @@
     <button type="submit">Upload</button>
   </form>
 
+  <!-- 👤 YouTuber Campaign Submissions -->
+  <h2>YouTuber Campaign Submissions</h2>
+  {% if youtuber_campaigns %}
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>YouTube Link</th>
+        <th>Submitted By</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for campaign in youtuber_campaigns %}
+      <tr>
+        <td>{{ campaign.title }}</td>
+        <td><a href="{{ campaign.youtube_link }}" target="_blank">Watch</a></td>
+        <td>{{ campaign.submitted_by }}</td>
+        <td>{{ campaign.status }}</td>
+        <td>
+          {% if campaign.status == 'pending' %}
+          <form method="POST" action="/approve-campaign/{{ loop.index0 }}" style="display:inline">
+            <button type="submit">Approve</button>
+          </form>
+          <form method="POST" action="/reject-campaign/{{ loop.index0 }}" style="display:inline">
+            <button type="submit">Reject</button>
+          </form>
+          {% else %}
+          <em>{{ campaign.status }}</em>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>No YouTuber submissions yet.</p>
+  {% endif %}
+
   <!-- 👥 Earnings per User -->
   <h2>User Earnings</h2>
   <table>
