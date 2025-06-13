@@ -3,59 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <title>Watch & Earn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .video-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .reward {
+            margin-top: 20px;
+            font-weight: bold;
+            color: green;
+        }
+
+        .countdown {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #555;
+        }
+
+        .ad-top {
+            margin-bottom: 15px;
+        }
+
+        /* Popup overlay */
+        #popupAd {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .popup-content p {
+            font-size: 16px;
+        }
+
+        .popup-count {
+            font-size: 22px;
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <!-- AdSense banner ad (replace with your actual code) -->
-    <div class="adsense-banner">
+
+<!-- ✅ Top AdSense Banner -->
+<div class="ad-top">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+    crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-6332657251575161"
+       data-ad-slot="8486290217"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<h2>🎥 Watch and Earn</h2>
+
+<div class="video-container">
+    <h3>{{ video.title }}</h3>
+    <video id="videoPlayer" width="100%" controls>
+        <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="countdown" id="countdown">⏳ Watch for 30 seconds to earn reward</div>
+    <div class="reward" id="rewardInfo"></div>
+</div>
+
+<!-- ✅ Popup Ad Simulation -->
+<div id="popupAd">
+    <div class="popup-content">
+        <h3>Sponsored Ad</h3>
+        <p>Reward unlocking in <span class="popup-count" id="popupTimer">3</span> seconds...</p>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
-                crossorigin="anonymous"></script>
+          crossorigin="anonymous"></script>
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-6332657251575161"
              data-ad-slot="8486290217"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+</div>
 
-    <h1>Watch & Earn</h1>
-    <div class="video-container">
-        <video id="videoPlayer" width="100%" controls autoplay>
-            <source src="{{ video.url }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+<script>
+    const video = document.getElementById('videoPlayer');
+    const countdownEl = document.getElementById('countdown');
+    const rewardEl = document.getElementById('rewardInfo');
+    const popupAd = document.getElementById('popupAd');
+    const popupTimerEl = document.getElementById('popupTimer');
 
-    <div class="timer-container">
-        <p id="countdown">Watching... <span id="timer">30</span> seconds</p>
-        <button id="claimReward" disabled onclick="claimReward()">Claim $0.0001</button>
-    </div>
+    let secondsWatched = 0;
+    let rewardGiven = false;
+    let interval;
+    let popupShown = false;
 
-    <!-- AdSense pop-up ad on reward (optional) -->
-    <div id="rewardAd" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close" onclick="document.getElementById('rewardAd').style.display='none'">&times;</span>
-            <p>Thanks for watching! Please check this out:</p>
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
-                    crossorigin="anonymous"></script>
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-6332657251575161"
-                 data-ad-slot="8486290217"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
-        </div>
-    </div>
+    video.addEventListener('play', () => {
+        if (!popupShown) {
+            showPopupAd();
+            popupShown = true;
+        }
 
-    <footer>
-        <a href="{{ url_for('index') }}">Back to Home</a>
-    </footer>
+        if (!interval && !rewardGiven) {
+            interval = setInterval(() => {
+                if (!video.paused && !video.ended) {
+                    secondsWatched++;
+                    countdownEl.textContent = `⏳ ${30 - secondsWatched} seconds remaining to earn reward`;
+
+                    if (secondsWatched >= 30 && !rewardGiven) {
+                        clearInterval(interval);
+                        rewardGiven = true;
+                        giveReward();
+                    }
+                }
+            }, 1000);
+        }
+    });
+
+    function showPopupAd() {
+        popupAd.style.display = 'flex';
+        let popupSeconds = 3;
+        const popupInterval = setInterval(() => {
+            popupSeconds--;
+            popupTimerEl.textContent = popupSeconds;
+            if (popupSeconds <= 0) {
+                clearInterval(popupInterval);
+                popupAd.style.display = 'none';
+            }
+        }, 1000);
+    }
+
+    function giveReward() {
+        fetch("/reward", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                countdownEl.style.display = 'none';
+                rewardEl.innerText = "✅ Reward earned! Total: $" + data.earnings.toFixed(4);
+            });
+    }
+</script>
+
 </body>
 </html>
