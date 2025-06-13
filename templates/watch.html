@@ -33,7 +33,6 @@
             margin-bottom: 15px;
         }
 
-        /* Popup overlay */
         #popupAd {
             display: none;
             position: fixed;
@@ -121,6 +120,7 @@
     let interval;
     let popupShown = false;
 
+    // Show popup ad when video starts
     video.addEventListener('play', () => {
         if (!popupShown) {
             showPopupAd();
