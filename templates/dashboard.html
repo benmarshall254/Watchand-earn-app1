@@ -3,20 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 30px;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #667eea;
+            color: white;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            float: right;
+            margin-top: -45px;
+            margin-right: 20px;
+            border-radius: 4px;
+        }
+        .remove-btn {
+            background-color: #c0392b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .form-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        .form-section h3 {
+            margin-top: 0;
+        }
+        .form-section input[type="text"],
+        .form-section input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-section input[type="submit"] {
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Admin Dashboard</h2>
-    <p>Welcome, {{ username }}!</p>
-    <p>Total earnings: ${{ earnings }}</p>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
 
-    <h3>Users</h3>
-    <ul>
-        {% for user, data in users.items() %}
-            <li>{{ user }}: ${{ data.earnings }}</li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <h2>Video Stats</h2>
+        <table>
+            <tr>
+                <th>Video Title</th>
+                <th>Total Views</th>
+                <th>Unique Visitors</th>
+                <th>Action</th>
+            </tr>
+            {% for video in videos %}
+            <tr>
+                <td>{{ video.title }}</td>
+                <td>{{ views.get(video.id, 0) }}</td>
+                <td>{{ visitors.get(video.id, 0) }}</td>
+                <td><button class="remove-btn" disabled>Remove</button></td>
+            </tr>
+            {% endfor %}
+        </table>
 
-    <a href="/">← Back to Home</a>
+        <!-- Upload new video -->
+        <div class="form-section">
+            <h3>Add New Video</h3>
+            <form method="POST" action="/upload">
+                <input type="text" name="title" placeholder="Video Title" required>
+                <input type="text" name="id" placeholder="Unique Video ID (e.g., vid004)" required>
+                <input type="url" name="url" placeholder="Video URL (mp4 link or path)" required>
+                <input type="submit" value="Upload Video">
+            </form>
+        </div>
+
+        <!-- AdSense for Admin -->
+        <div style="margin-top: 30px;">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+                crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="ca-pub-6332657251575161"
+                data-ad-slot="8486290217"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
 </body>
 </html>
