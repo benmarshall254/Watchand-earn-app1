@@ -92,11 +92,11 @@
         {% endwith %}
 
         <form method="post" action="{{ url_for('login') }}">
-            <label for="username">Username</label>
-            <input type="text" name="username" placeholder="Marshall or user1" required>
+            <label for="username">Username or Email</label>
+            <input type="text" name="username" placeholder="Enter username" required autocomplete="username">
 
             <label for="password">Password</label>
-            <input type="password" name="password" placeholder="forgot password or user password" required>
+            <input type="password" name="password" placeholder="Enter password" required autocomplete="current-password">
 
             <button type="submit">Login</button>
         </form>
