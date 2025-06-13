@@ -3,44 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    form {
+      margin-bottom: 30px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 8px;
+      margin-right: 10px;
+    }
+    .popup-ad {
+      display: none;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Google AdSense top ad -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+    crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-6332657251575161"
+       data-ad-slot="8486290217"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
   <h1>Admin Dashboard</h1>
 
-  <h2>Visitors Tracker</h2>
-  <p>Total Unique Visitors: <strong>{{ visitors }}</strong></p>
+  <p><strong>Silent Visitor Count:</strong> {{ visitor_count }}</p>
+  <p><strong>Total Site Earnings (AdSense):</strong> Estimated — login to your AdSense dashboard</p>
 
-  <h2>User Earnings</h2>
-  <table border="1" cellpadding="8">
+  <h2>All Videos</h2>
+  <table>
     <thead>
       <tr>
-        <th>User Email</th>
-        <th>Video Views</th>
-        <th>Total Earned ($)</th>
+        <th>Title</th>
+        <th>URL</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      {% for email, info in users.items() %}
+      {% for video in videos %}
       <tr>
-        <td>{{ email }}</td>
-        <td>{{ info.views }}</td>
-        <td>${{ '%.4f' | format(info.earnings) }}</td>
+        <td>{{ video.title }}</td>
+        <td>{{ video.url }}</td>
+        <td>
+          <form method="POST" action="/remove-video">
+            <input type="hidden" name="url" value="{{ video.url }}">
+            <button type="submit">Remove</button>
+          </form>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <h2>Upload New Video</h2>
-  <form action="/upload" method="POST" enctype="multipart/form-data">
-    <label>Video Title:</label><br>
-    <input type="text" name="title" required><br><br>
-    <label>Select Video File:</label><br>
-    <input type="file" name="video" accept="video/*" required><br><br>
-    <button type="submit">Upload Video</button>
+  <form method="POST" action="/add-video">
+    <input type="text" name="title" placeholder="Video Title" required>
+    <input type="text" name="url" placeholder="Video File URL (MP4)" required>
+    <button type="submit">Add Video</button>
   </form>
 
-  <br><br>
-  <a href="/logout">Logout</a>
+  <h2>User Earnings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Earnings ($)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user, data in users.items() %}
+      <tr>
+        <td>{{ user }}</td>
+        <td>{{ '%.4f' % data.earnings }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- AdSense Popup Ad (optional placement) -->
+  <div class="popup-ad">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+      crossorigin="anonymous"></script>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-6332657251575161"
+         data-ad-slot="8486290217"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
 </body>
 </html>
