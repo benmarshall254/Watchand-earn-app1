@@ -1,16 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, session, flash
 from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
 app.secret_key = 'admin123'
+
+# For Render or HTTPS deployment
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# In-memory data
+# In-memory data (for demo)
 users = {
-    "user1": {"earnings": 0.50},
-    "user2": {"earnings": 1.75}
+    "user1": {"earnings": 0.50, "password": "pass123"},
+    "user2": {"earnings": 1.75, "password": "mypassword"}
 }
 withdrawals = []
 videos = []
@@ -23,11 +28,11 @@ def home():
     if 'admin' in session:
         return redirect('/admin-dashboard')
     elif 'user' in session:
-        return redirect('/index')
+        return redirect('/user-dashboard')
     return redirect('/login')
 
-@app.route('/index')
-def index():
+@app.route('/user-dashboard')
+def user_dashboard():
     if 'user' not in session:
         return redirect('/login')
     username = session['user']
@@ -42,15 +47,15 @@ def login():
         username = request.form['username'].strip()
         password = request.form['password'].strip()
 
-        if username == 'admin' and password == 'admin':
+        if username.lower() == 'marshall' and password == 'forgot password':
             session.clear()
             session['admin'] = True
             return redirect('/admin-dashboard')
 
-        elif username in users:
+        elif username in users and password == users[username].get('password'):
             session.clear()
             session['user'] = username
-            return redirect('/index')
+            return redirect('/user-dashboard')
 
         else:
             flash("Invalid credentials.")
@@ -82,7 +87,6 @@ def upload():
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         video.save(path)
         videos.append({
-            "id": len(videos),
             "title": title,
             "filename": filename,
             "thumbnail": thumbnail
