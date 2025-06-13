@@ -1,117 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Watch & Earn</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        .earnings-box {
-            background: #d4edda;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid green;
-            border-radius: 5px;
-        }
-        .nav-links a {
-            margin-right: 15px;
-            text-decoration: none;
-            font-weight: bold;
-            color: #007BFF;
-        }
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .video-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .video-card img {
-            width: 100%;
-            max-height: 180px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .video-card h3 {
-            margin: 10px 0;
-            font-size: 18px;
-        }
-        .button {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 12px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from werkzeug.utils import secure_filename
+import os
 
-    <!-- ✅ Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
-        crossorigin="anonymous"></script>
-    <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6332657251575161"
-        data-ad-slot="8486290217"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+app = Flask(__name__)
+app.secret_key = 'admin123'
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-    <h1>🎬 Watch & Earn</h1>
+# In-memory data
+users = {
+    "user1": {"earnings": 0.50},
+    "user2": {"earnings": 1.75}
+}
+withdrawals = []
+videos = []
+youtuber_campaigns = []
 
-    <div class="nav-links">
-        <a href="/withdraw">💵 Withdraw</a>
-        <a href="/admin-login">🔐 Admin Login</a>
-    </div>
+# -------------------- PUBLIC ROUTES --------------------
 
-    <div class="earnings-box" id="earnings-box">
-        Loading your earnings...
-    </div>
+@app.route('/')
+def index():
+    # Add video IDs so templates can link to them
+    video_list = []
+    for i, video in enumerate(videos):
+        video_list.append({**video, "id": i})
+    return render_template('index.html', videos=video_list)
 
-    {% if videos %}
-    <div class="video-grid">
-        {% for video in videos %}
-        <div class="video-card">
-            {% if video.thumbnail %}
-                <img src="{{ video.thumbnail }}" alt="Thumbnail">
-            {% else %}
-                <img src="{{ url_for('static', filename='uploads/' + video.filename) }}" alt="Video">
-            {% endif %}
-            <h3>{{ video.title }}</h3>
-            <a class="button" href="{{ url_for('watch', video_id=video.id) }}">▶ Watch to Earn</a>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-        <p>No videos available yet.</p>
-    {% endif %}
+@app.route('/earnings')
+def get_earnings():
+    # Simulate current user (in real app, use session)
+    return jsonify({"earnings": 1.25})
 
-    <script>
-        fetch("/earnings")
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("earnings-box").innerText =
-                    "Your Current Earnings: $" + data.earnings.toFixed(4);
-            })
-            .catch(() => {
-                document.getElementById("earnings-box").innerText =
-                    "Unable to load earnings.";
-            });
-    </script>
+@app.route('/watch/<int:video_id>')
+def watch(video_id):
+    if 0 <= video_id < len(videos):
+        return f"Watching: {videos[video_id]['title']} (You’ll earn here)"
+    return "Video not found", 404
 
-</body>
-</html>
+# -------------------- ADMIN AUTH --------------------
+
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == 'admin' and password == 'admin':
+            session['admin'] = True
+            return redirect('/admin-dashboard')
+        else:
+            flash("Invalid credentials.")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+# -------------------- ADMIN DASHBOARD --------------------
+
+@app.route('/admin-dashboard')
+def admin_dashboard():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    return render_template('dashboard.html', users=users, withdrawals=withdrawals,
+                           videos=videos, visitors=123, youtuber_campaigns=youtuber_campaigns)
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 'video' in request.files:
+        video = request.files['video']
+        title = request.form['title']
+        thumbnail = request.form.get('thumbnail', '')
+        filename = secure_filename(video.filename)
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        video.save(path)
+        videos.append({"title": title, "filename": filename, "thumbnail": thumbnail})
+    return redirect('/admin-dashboard')
+
+@app.route('/delete/<int:vid_id>', methods=['POST'])
+def delete_video(vid_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= vid_id < len(videos):
+        del videos[vid_id]
+    return redirect('/admin-dashboard')
+
+@app.route('/withdraw')
+def withdraw_page():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    return render_template('withdraw.html', withdrawals=withdrawals)
+
+@app.route('/withdraw/<int:req_id>/approve', methods=['POST'])
+def approve_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= req_id < len(withdrawals):
+        withdrawals[req_id]['status'] = 'approved'
+    return redirect('/admin-dashboard')
+
+@app.route('/withdraw/<int:req_id>/reject', methods=['POST'])
+def reject_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= req_id < len(withdrawals):
+        withdrawals[req_id]['status'] = 'rejected'
+    return redirect('/admin-dashboard')
+
+# -------------------- YOUTUBER SUBMISSION --------------------
+
+@app.route('/youtuber-upload', methods=['GET', 'POST'])
+def youtuber_upload():
+    if request.method == 'POST':
+        title = request.form['title']
+        youtube_link = request.form['youtube_link']
+        submitted_by = request.form['submitted_by']
+        youtuber_campaigns.append({
+            'title': title,
+            'youtube_link': youtube_link,
+            'submitted_by': submitted_by,
+            'status': 'pending'
+        })
+        return "Submitted"
+    return '''
+        <form method="POST">
+            <input name='title' placeholder='Video Title'><br>
+            <input name='youtube_link' placeholder='YouTube URL'><br>
+            <input name='submitted_by' placeholder='Your Email'><br>
+            <button type='submit'>Submit</button>
+        </form>
+    '''
+
+@app.route('/approve-campaign/<int:index>', methods=['POST'])
+def approve_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= index < len(youtuber_campaigns):
+        youtuber_campaigns[index]['status'] = 'approved'
+    return redirect('/admin-dashboard')
+
+@app.route('/reject-campaign/<int:index>', methods=['POST'])
+def reject_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= index < len(youtuber_campaigns):
+        youtuber_campaigns[index]['status'] = 'rejected'
+    return redirect('/admin-dashboard')
+
+# -------------------- MAIN --------------------
+
+if __name__ == '__main__':
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    app.run(debug=True, port=5000)
