@@ -2,14 +2,14 @@
   "visitors": 0,
   "videos": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Welcome to Watch & Earn",
       "filename": "welcome.mp4",
       "thumbnail": "thumb1.jpg",
       "reward": 0.0001
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "Learn & Earn Tips",
       "filename": "tips.mp4",
       "thumbnail": "thumb2.jpg",
@@ -20,10 +20,15 @@
     "admin": {
       "password": "admin123",
       "earnings": 0,
-      "watched": []
+      "watched": [],
+      "last_reward_time": 0,
+      "last_login_date": "",
+      "daily_rewarded": false
     }
   },
   "withdrawals": [],
   "daily_logins": {},
-  "ad_clicks": 0
+  "ad_clicks": 0,
+  "daily_login_reward": 0.005,
+  "campaigns": []
 }
