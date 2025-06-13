@@ -1,33 +1,64 @@
 {
-  "users": {
-    "admin": {
-      "password": "admin123",
-      "earnings": 0,
-      "visitors": 0,
-      "views": 0
-    },
-    "user1@example.com": {
-      "earnings": 0.0002,
-      "views": 2
-    },
-    "user2@example.com": {
-      "earnings": 0.0001,
-      "views": 1
-    }
-  },
+  "visitors": 0,
   "videos": [
     {
       "id": 1,
-      "title": "Earn with Video 1",
-      "filename": "video1.mp4",
-      "reward": 0.0001
+      "title": "Welcome Video",
+      "filename": "welcome.mp4"
     },
     {
       "id": 2,
-      "title": "Earn with Video 2",
-      "filename": "video2.mp4",
-      "reward": 0.0001
+      "title": "How It Works",
+      "filename": "how-it-works.mp4"
+    },
+    {
+      "id": 3,
+      "title": "Earn More Tips",
+      "filename": "earn-tips.mp4"
     }
   ],
-  "visits": 27
+  "users": {
+    "admin": {
+      "password": "admin123",
+      "is_admin": true,
+      "earnings": 0.0
+    },
+    "user1": {
+      "password": "user123",
+      "is_admin": false,
+      "earnings": 0.0003
+    },
+    "user2": {
+      "password": "pass456",
+      "is_admin": false,
+      "earnings": 0.0002
+    }
+  },
+  "watch_history": {
+    "admin": [
+      {
+        "video_id": 1,
+        "duration": 30,
+        "timestamp": "2025-06-13T12:00:00Z"
+      }
+    ],
+    "user1": [
+      {
+        "video_id": 2,
+        "duration": 60,
+        "timestamp": "2025-06-13T12:30:00Z"
+      }
+    ],
+    "user2": [
+      {
+        "video_id": 3,
+        "duration": 45,
+        "timestamp": "2025-06-13T13:00:00Z"
+      }
+    ]
+  },
+  "adsense_estimates": {
+    "total_views": 150,
+    "total_revenue": 0.05
+  }
 }
