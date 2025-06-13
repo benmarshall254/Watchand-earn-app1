@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.utils import secure_filename
 import os
-import json
 
 app = Flask(__name__)
 app.secret_key = 'admin123'
@@ -17,32 +16,44 @@ withdrawals = []
 videos = []
 youtuber_campaigns = []
 
-@app.route('/')
-def home():
-    return redirect('/login')
+# -------------------- PUBLIC ROUTES --------------------
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/')
+def index():
+    return render_template('index.html', videos=videos)
+
+# -------------------- ADMIN AUTH --------------------
+
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
     if request.method == 'POST':
-        if request.form['username'] == 'admin' and request.form['password'] == 'admin':
+        username = request.form['username']
+        password = request.form['password']
+        if username == 'admin' and password == 'admin':
             session['admin'] = True
             return redirect('/admin-dashboard')
+        else:
+            flash("Invalid credentials.")
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect('/login')
+    return redirect('/')
+
+# -------------------- ADMIN DASHBOARD --------------------
 
 @app.route('/admin-dashboard')
 def admin_dashboard():
     if not session.get('admin'):
-        return redirect('/login')
+        return redirect('/admin-login')
     return render_template('dashboard.html', users=users, withdrawals=withdrawals,
                            videos=videos, visitors=123, youtuber_campaigns=youtuber_campaigns)
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 'video' in request.files:
         video = request.files['video']
         title = request.form['title']
@@ -55,6 +66,8 @@ def upload():
 
 @app.route('/delete/<int:vid_id>', methods=['POST'])
 def delete_video(vid_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 0 <= vid_id < len(videos):
         del videos[vid_id]
     return redirect('/admin-dashboard')
@@ -62,20 +75,26 @@ def delete_video(vid_id):
 @app.route('/withdraw')
 def withdraw_page():
     if not session.get('admin'):
-        return redirect('/login')
+        return redirect('/admin-login')
     return render_template('withdraw.html', withdrawals=withdrawals)
 
 @app.route('/withdraw/<int:req_id>/approve', methods=['POST'])
 def approve_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 0 <= req_id < len(withdrawals):
         withdrawals[req_id]['status'] = 'approved'
     return redirect('/admin-dashboard')
 
 @app.route('/withdraw/<int:req_id>/reject', methods=['POST'])
 def reject_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 0 <= req_id < len(withdrawals):
         withdrawals[req_id]['status'] = 'rejected'
     return redirect('/admin-dashboard')
+
+# -------------------- YOUTUBER SUBMISSION --------------------
 
 @app.route('/youtuber-upload', methods=['GET', 'POST'])
 def youtuber_upload():
@@ -101,15 +120,21 @@ def youtuber_upload():
 
 @app.route('/approve-campaign/<int:index>', methods=['POST'])
 def approve_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 0 <= index < len(youtuber_campaigns):
         youtuber_campaigns[index]['status'] = 'approved'
     return redirect('/admin-dashboard')
 
 @app.route('/reject-campaign/<int:index>', methods=['POST'])
 def reject_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
     if 0 <= index < len(youtuber_campaigns):
         youtuber_campaigns[index]['status'] = 'rejected'
     return redirect('/admin-dashboard')
+
+# -------------------- MAIN --------------------
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
