@@ -1,0 +1,8 @@
+{
+  "users": {
+    "admin": {
+      "password": "admin123",
+      "earnings": 0.0
+    }
+  }
+}
