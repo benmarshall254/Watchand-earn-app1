@@ -89,7 +89,7 @@
                 <p class="error">{{ messages[0] }}</p>
             {% endif %}
         {% endwith %}
-        <form method="post" action="{{ url_for('admin_login') }}">
+        <form method="post" action="{{ url_for('login') }}">
             <label for="username">Username or Email</label>
             <input type="text" name="username" required>
 
