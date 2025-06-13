@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Admin Dashboard</h2>
+    <p>Welcome, {{ username }}!</p>
+    <p>Total earnings: ${{ earnings }}</p>
+
+    <h3>Users</h3>
+    <ul>
+        {% for user, data in users.items() %}
+            <li>{{ user }}: ${{ data.earnings }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">← Back to Home</a>
+</body>
+</html>
