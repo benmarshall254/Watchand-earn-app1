@@ -22,15 +22,8 @@ if not os.path.exists(DATA_FILE):
         json.dump({
             "visitors": 0,
             "videos": [],
-            "users": {
-                "admin": {
-                    "password": "admin123",
-                    "earnings": 0,
-                    "watched": []
-                }
-            },
+            "users": {},
             "withdrawals": [],
-            "daily_logins": {},
             "ad_clicks": 0
         }, f, indent=2)
 
@@ -49,8 +42,6 @@ def allowed_file(filename):
 def count_visits():
     if request.endpoint not in ('static',):
         data = load_data()
-        if 'visitors' not in data:
-            data['visitors'] = 0
         data['visitors'] += 1
         save_data(data)
 
@@ -63,7 +54,7 @@ def index():
 @app.route('/watch/<video_id>')
 def watch(video_id):
     data = load_data()
-    video = next((v for v in data.get('videos', []) if v['id'] == video_id), None)
+    video = next((v for v in data['videos'] if v['id'] == video_id), None)
     if not video:
         return "Video not found", 404
     return render_template('watch.html', video=video)
@@ -72,11 +63,20 @@ def watch(video_id):
 def reward():
     user_ip = request.remote_addr
     data = load_data()
-    if user_ip not in data['users']:
-        data['users'][user_ip] = {"earnings": 0, "watched": []}
-    data['users'][user_ip]['earnings'] += 0.0001
-    save_data(data)
-    return jsonify({"earnings": round(data['users'][user_ip]['earnings'], 4)})
+    user = data['users'].get(user_ip, {
+        "earnings": 0,
+        "watched": [],
+        "last_reward_time": 0
+    })
+
+    current_time = int(time.time())
+    if current_time - user.get("last_reward_time", 0) >= 30:
+        user["earnings"] += 0.001
+        user["last_reward_time"] = current_time
+        data['users'][user_ip] = user
+        save_data(data)
+
+    return jsonify({"earnings": round(user["earnings"], 4)})
 
 @app.route('/earnings')
 def earnings():
@@ -84,6 +84,30 @@ def earnings():
     data = load_data()
     earnings = data['users'].get(user_ip, {}).get("earnings", 0)
     return jsonify({"earnings": round(earnings, 4)})
+
+@app.route('/withdraw', methods=['GET', 'POST'])
+def withdraw():
+    user_ip = request.remote_addr
+    data = load_data()
+    user = data['users'].get(user_ip, {})
+    if request.method == 'POST':
+        method = request.form['method']
+        account = request.form['account']
+        amount = float(user.get("earnings", 0))
+        if amount >= 1:  # Minimum withdrawal
+            data['withdrawals'].append({
+                "user": user_ip,
+                "method": method,
+                "account": account,
+                "amount": round(amount, 4),
+                "timestamp": str(datetime.now())
+            })
+            user['earnings'] = 0
+            save_data(data)
+            return render_template('withdraw.html', message="Withdrawal requested!")
+        else:
+            return render_template('withdraw.html', message="Minimum $1 required.")
+    return render_template('withdraw.html')
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -101,7 +125,10 @@ def dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
     data = load_data()
-    return render_template('dashboard.html', videos=data.get("videos", []), visitors=data.get("visitors", 0), users=data.get("users", {}))
+    return render_template('dashboard.html', videos=data.get("videos", []),
+                           visitors=data.get("visitors", 0),
+                           users=data.get("users", {}),
+                           withdrawals=data.get("withdrawals", []))
 
 @app.route('/upload', methods=['POST'])
 def upload_video():
@@ -120,8 +147,7 @@ def upload_video():
         "id": video_id,
         "filename": filename,
         "title": request.form.get("title", f"Video {video_id}"),
-        "thumbnail": request.form.get("thumbnail", ""),
-        "reward": 0.0001
+        "reward": 0.001
     })
     save_data(data)
     return redirect(url_for('dashboard'))
