@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch & Earn</title>
+  <script src="/static/script.js" defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fffbe6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h2 {
+      color: #444;
+    }
+    video {
+      width: 90%;
+      max-width: 720px;
+      margin: 20px 0;
+      border-radius: 10px;
+    }
+    .timer {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: green;
+    }
+    .earn-msg {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #155724;
+      background: #d4edda;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>You're earning... 🎉</h2>
+  <div class="timer">Time watched: <span id="counter">0</span>s</div>
+  <video id="videoPlayer" src="{{ video.url }}" controls autoplay></video>
+  <div class="earn-msg" id="earnMsg">✅ You've earned $0.0001!</div>
+</body>
+</html>
