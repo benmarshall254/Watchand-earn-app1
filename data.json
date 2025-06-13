@@ -2,7 +2,32 @@
   "users": {
     "admin": {
       "password": "admin123",
-      "earnings": 0.0
+      "earnings": 0,
+      "visitors": 0,
+      "views": 0
+    },
+    "user1@example.com": {
+      "earnings": 0.0002,
+      "views": 2
+    },
+    "user2@example.com": {
+      "earnings": 0.0001,
+      "views": 1
     }
-  }
+  },
+  "videos": [
+    {
+      "id": 1,
+      "title": "Earn with Video 1",
+      "filename": "video1.mp4",
+      "reward": 0.0001
+    },
+    {
+      "id": 2,
+      "title": "Earn with Video 2",
+      "filename": "video2.mp4",
+      "reward": 0.0001
+    }
+  ],
+  "visits": 27
 }
