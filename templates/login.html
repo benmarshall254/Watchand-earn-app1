@@ -83,21 +83,23 @@
 </head>
 <body>
     <div class="login-container">
-        <h2>🔐 Admin Login</h2>
+        <h2>🔐 Login to Watch & Earn</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                <p class="error">{{ messages[0] }}</p>
+                <div class="error">{{ messages[0] }}</div>
             {% endif %}
         {% endwith %}
-        <form method="post" action="{{ url_for('admin_login') }}">
+
+        <form method="post" action="{{ url_for('login') }}">
             <label for="username">Username or Email</label>
-            <input type="text" name="username" required>
+            <input type="text" name="username" placeholder="Enter username" required>
 
             <label for="password">Password</label>
-            <input type="password" name="password" required>
+            <input type="password" name="password" placeholder="Enter password" required>
 
             <button type="submit">Login</button>
         </form>
+
         <a href="/">← Back to Home</a>
     </div>
 </body>
