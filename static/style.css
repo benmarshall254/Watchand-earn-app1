@@ -1,45 +1,91 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(120deg, #f6f9fc, #e0f7fa);
   margin: 0;
   padding: 0;
+  color: #333;
 }
 
 header {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
   color: #fff;
-  padding: 20px;
+  padding: 25px;
   text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 1px;
 }
 
 main {
   padding: 20px;
+  max-width: 1000px;
+  margin: auto;
 }
 
 .video-card {
   background: #fff;
-  margin-bottom: 20px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  margin-bottom: 25px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.video-card h3 {
+  color: #0072ff;
+  margin-top: 0;
+}
+
+video {
   border-radius: 8px;
+  max-width: 100%;
+  display: block;
+  margin-bottom: 10px;
+}
+
+a.button {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #00c6ff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+a.button:hover {
+  background: #0072ff;
 }
 
 button, input[type="submit"] {
-  background: #667eea;
+  background: #00c6ff;
   color: #fff;
   border: none;
-  padding: 10px 15px;
+  padding: 10px 16px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: background 0.3s ease;
 }
 
-button:hover {
-  background: #5a67d8;
+button:hover, input[type="submit"]:hover {
+  background: #0072ff;
 }
 
-form input[type="text"], form input[type="url"] {
-  padding: 8px;
-  margin-right: 10px;
+form input[type="text"], form input[type="url"], form input[type="file"] {
+  padding: 10px;
+  margin-bottom: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+  width: calc(100% - 22px);
+  box-sizing: border-box;
 }
