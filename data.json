@@ -3,62 +3,27 @@
   "videos": [
     {
       "id": 1,
-      "title": "Welcome Video",
-      "filename": "welcome.mp4"
+      "title": "Welcome to Watch & Earn",
+      "filename": "welcome.mp4",
+      "thumbnail": "thumb1.jpg",
+      "reward": 0.0001
     },
     {
       "id": 2,
-      "title": "How It Works",
-      "filename": "how-it-works.mp4"
-    },
-    {
-      "id": 3,
-      "title": "Earn More Tips",
-      "filename": "earn-tips.mp4"
+      "title": "Learn & Earn Tips",
+      "filename": "tips.mp4",
+      "thumbnail": "thumb2.jpg",
+      "reward": 0.0001
     }
   ],
   "users": {
     "admin": {
       "password": "admin123",
-      "is_admin": true,
-      "earnings": 0.0
-    },
-    "user1": {
-      "password": "user123",
-      "is_admin": false,
-      "earnings": 0.0003
-    },
-    "user2": {
-      "password": "pass456",
-      "is_admin": false,
-      "earnings": 0.0002
+      "earnings": 0,
+      "watched": []
     }
   },
-  "watch_history": {
-    "admin": [
-      {
-        "video_id": 1,
-        "duration": 30,
-        "timestamp": "2025-06-13T12:00:00Z"
-      }
-    ],
-    "user1": [
-      {
-        "video_id": 2,
-        "duration": 60,
-        "timestamp": "2025-06-13T12:30:00Z"
-      }
-    ],
-    "user2": [
-      {
-        "video_id": 3,
-        "duration": 45,
-        "timestamp": "2025-06-13T13:00:00Z"
-      }
-    ]
-  },
-  "adsense_estimates": {
-    "total_views": 150,
-    "total_revenue": 0.05
-  }
+  "withdrawals": [],
+  "daily_logins": {},
+  "ad_clicks": 0
 }
