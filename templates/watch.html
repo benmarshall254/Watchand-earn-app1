@@ -120,7 +120,6 @@
     let interval;
     let popupShown = false;
 
-    // Show popup ad when video starts
     video.addEventListener('play', () => {
         if (!popupShown) {
             showPopupAd();
@@ -157,7 +156,7 @@
     }
 
     function giveReward() {
-        fetch("/reward", { method: "POST" })
+        fetch("{{ url_for('reward', video_id=video.id) }}", { method: "POST" })
             .then(response => response.json())
             .then(data => {
                 countdownEl.style.display = 'none';
