@@ -9,13 +9,14 @@
       background: #f3f3f3;
       padding: 20px;
     }
-    h1 {
+    h1, h2 {
       color: #333;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      background: #fff;
     }
     table, th, td {
       border: 1px solid #ccc;
@@ -34,14 +35,20 @@
       padding: 8px;
       margin-right: 10px;
     }
-    .popup-ad {
-      display: none;
+    .top-links {
+      margin-bottom: 20px;
+    }
+    .top-links a {
+      margin-right: 20px;
+      text-decoration: none;
+      color: #007BFF;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <!-- Google AdSense top ad -->
+  <!-- ✅ Google AdSense Top Ad -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
     crossorigin="anonymous"></script>
   <ins class="adsbygoogle"
@@ -54,10 +61,16 @@
 
   <h1>Admin Dashboard</h1>
 
-  <p><strong>Silent Visitor Count:</strong> {{ visitors }}</p>
-  <p><strong>Total Site Earnings (AdSense):</strong> Estimated — login to your AdSense dashboard</p>
+  <div class="top-links">
+    <a href="/withdraw">Manual Withdrawals Page</a>
+    <a href="/logout">Logout</a>
+  </div>
 
-  <h2>All Videos</h2>
+  <p><strong>Silent Visitor Count:</strong> {{ visitors }}</p>
+  <p><strong>Total Site Earnings (AdSense):</strong> Estimated — Check in your AdSense dashboard</p>
+
+  <!-- 🎥 Video Management -->
+  <h2>All Uploaded Videos</h2>
   <table>
     <thead>
       <tr>
@@ -76,11 +89,11 @@
             <button type="submit">Delete</button>
           </form>
         </td>
-      </tr>
       {% endfor %}
     </tbody>
   </table>
 
+  <!-- ⬆ Upload Form -->
   <h2>Upload New Video</h2>
   <form method="POST" action="/upload" enctype="multipart/form-data">
     <input type="text" name="title" placeholder="Video Title" required>
@@ -89,6 +102,7 @@
     <button type="submit">Upload</button>
   </form>
 
+  <!-- 👥 Earnings per User -->
   <h2>User Earnings</h2>
   <table>
     <thead>
@@ -107,18 +121,47 @@
     </tbody>
   </table>
 
-  <!-- Optional: Popup Ad -->
-  <div class="popup-ad">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
-      crossorigin="anonymous"></script>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-6332657251575161"
-         data-ad-slot="8486290217"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
+  <!-- 💸 Withdrawal Requests -->
+  <h2>Withdrawal Requests</h2>
+  {% if withdrawals %}
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Amount ($)</th>
+        <th>Method</th>
+        <th>Details</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in withdrawals %}
+      <tr>
+        <td>{{ request.user }}</td>
+        <td>{{ '%.2f' % request.amount }}</td>
+        <td>{{ request.method }}</td>
+        <td>{{ request.details }}</td>
+        <td>{{ request.status }}</td>
+        <td>
+          {% if request.status == 'pending' %}
+          <form method="POST" action="/withdraw/{{ loop.index0 }}/approve" style="display:inline">
+            <button type="submit">Approve</button>
+          </form>
+          <form method="POST" action="/withdraw/{{ loop.index0 }}/reject" style="display:inline">
+            <button type="submit">Reject</button>
+          </form>
+          {% else %}
+          <em>{{ request.status }}</em>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>No withdrawal requests yet.</p>
+  {% endif %}
 
 </body>
 </html>
