@@ -54,7 +54,7 @@
 
   <h1>Admin Dashboard</h1>
 
-  <p><strong>Silent Visitor Count:</strong> {{ visitor_count }}</p>
+  <p><strong>Silent Visitor Count:</strong> {{ visitors }}</p>
   <p><strong>Total Site Earnings (AdSense):</strong> Estimated — login to your AdSense dashboard</p>
 
   <h2>All Videos</h2>
@@ -62,7 +62,7 @@
     <thead>
       <tr>
         <th>Title</th>
-        <th>URL</th>
+        <th>Filename</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -70,11 +70,10 @@
       {% for video in videos %}
       <tr>
         <td>{{ video.title }}</td>
-        <td>{{ video.url }}</td>
+        <td>{{ video.filename }}</td>
         <td>
-          <form method="POST" action="/remove-video">
-            <input type="hidden" name="url" value="{{ video.url }}">
-            <button type="submit">Remove</button>
+          <form method="POST" action="/delete/{{ video.id }}">
+            <button type="submit">Delete</button>
           </form>
         </td>
       </tr>
@@ -83,10 +82,11 @@
   </table>
 
   <h2>Upload New Video</h2>
-  <form method="POST" action="/add-video">
+  <form method="POST" action="/upload" enctype="multipart/form-data">
     <input type="text" name="title" placeholder="Video Title" required>
-    <input type="text" name="url" placeholder="Video File URL (MP4)" required>
-    <button type="submit">Add Video</button>
+    <input type="text" name="thumbnail" placeholder="Thumbnail URL (optional)">
+    <input type="file" name="video" accept="video/mp4" required>
+    <button type="submit">Upload</button>
   </form>
 
   <h2>User Earnings</h2>
@@ -101,13 +101,13 @@
       {% for user, data in users.items() %}
       <tr>
         <td>{{ user }}</td>
-        <td>{{ '%.4f' % data.earnings }}</td>
+        <td>{{ '%.4f' % data['earnings'] }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <!-- AdSense Popup Ad (optional placement) -->
+  <!-- Optional: Popup Ad -->
   <div class="popup-ad">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
       crossorigin="anonymous"></script>
