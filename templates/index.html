@@ -1,21 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Watch & Earn</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .earnings-box {
+            background: #d4edda;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid green;
+            border-radius: 5px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #007BFF;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
         .video-card {
             background: white;
             border-radius: 10px;
             padding: 15px;
-            margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        a.button {
+        .video-card img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .video-card h3 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .button {
             display: inline-block;
             margin-top: 10px;
             padding: 8px 12px;
-            background: green;
+            background: #28a745;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -23,21 +59,59 @@
     </style>
 </head>
 <body>
+
+    <!-- ✅ Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+        crossorigin="anonymous"></script>
+    <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6332657251575161"
+        data-ad-slot="8486290217"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
     <h1>🎬 Watch & Earn</h1>
+
+    <div class="nav-links">
+        <a href="/withdraw">💵 Withdraw</a>
+        <a href="/admin-login">🔐 Admin Login</a>
+    </div>
+
+    <div class="earnings-box" id="earnings-box">
+        Loading your earnings...
+    </div>
+
     {% if videos %}
+    <div class="video-grid">
         {% for video in videos %}
         <div class="video-card">
+            {% if video.thumbnail %}
+                <img src="{{ video.thumbnail }}" alt="Thumbnail">
+            {% else %}
+                <img src="{{ url_for('static', filename='uploads/' + video.filename) }}" alt="Video">
+            {% endif %}
             <h3>{{ video.title }}</h3>
-            <video width="300" controls>
-                <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <br>
-            <a class="button" href="{{ url_for('watch', video_id=video.id) }}">Watch to Earn</a>
+            <a class="button" href="{{ url_for('watch', video_id=video.id) }}">▶ Watch to Earn</a>
         </div>
         {% endfor %}
+    </div>
     {% else %}
         <p>No videos available yet.</p>
     {% endif %}
+
+    <script>
+        fetch("/earnings")
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("earnings-box").innerText =
+                    "Your Current Earnings: $" + data.earnings.toFixed(4);
+            })
+            .catch(() => {
+                document.getElementById("earnings-box").innerText =
+                    "Unable to load earnings.";
+            });
+    </script>
+
 </body>
 </html>
