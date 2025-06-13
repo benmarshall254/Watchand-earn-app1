@@ -4,23 +4,35 @@ import os, json, time
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_key'  # change in production
+app.secret_key = 'super_secret_key'  # Change this in production
 
-# Set upload folder and allowed extensions
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'mp4'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Dummy admin credentials
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "1234"
+ADMIN_PASSWORD = "admin123"
 
-# Load data
 DATA_FILE = 'data.json'
+
+# Initialize data.json if not exists
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
-        json.dump({"users": {}, "visitors": 0, "videos": []}, f)
+        json.dump({
+            "visitors": 0,
+            "videos": [],
+            "users": {
+                "admin": {
+                    "password": "admin123",
+                    "earnings": 0,
+                    "watched": []
+                }
+            },
+            "withdrawals": [],
+            "daily_logins": {},
+            "ad_clicks": 0
+        }, f, indent=2)
 
 def load_data():
     with open(DATA_FILE, 'r') as f:
@@ -30,7 +42,6 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-# Utils
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -38,6 +49,8 @@ def allowed_file(filename):
 def count_visits():
     if request.endpoint not in ('static',):
         data = load_data()
+        if 'visitors' not in data:
+            data['visitors'] = 0
         data['visitors'] += 1
         save_data(data)
 
@@ -59,11 +72,11 @@ def watch(video_id):
 def reward():
     user_ip = request.remote_addr
     data = load_data()
-    user = data['users'].get(user_ip, {"earnings": 0})
-    user['earnings'] += 0.0001
-    data['users'][user_ip] = user
+    if user_ip not in data['users']:
+        data['users'][user_ip] = {"earnings": 0, "watched": []}
+    data['users'][user_ip]['earnings'] += 0.0001
     save_data(data)
-    return jsonify({"earnings": round(user['earnings'], 4)})
+    return jsonify({"earnings": round(data['users'][user_ip]['earnings'], 4)})
 
 @app.route('/earnings')
 def earnings():
@@ -88,7 +101,7 @@ def dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
     data = load_data()
-    return render_template('dashboard.html', videos=data.get("videos", []), visitors=data.get("visitors", 0), users=data['users'])
+    return render_template('dashboard.html', videos=data.get("videos", []), visitors=data.get("visitors", 0), users=data.get("users", {}))
 
 @app.route('/upload', methods=['POST'])
 def upload_video():
@@ -106,7 +119,9 @@ def upload_video():
     data['videos'].append({
         "id": video_id,
         "filename": filename,
-        "title": request.form.get("title", f"Video {video_id}")
+        "title": request.form.get("title", f"Video {video_id}"),
+        "thumbnail": request.form.get("thumbnail", ""),
+        "reward": 0.0001
     })
     save_data(data)
     return redirect(url_for('dashboard'))
