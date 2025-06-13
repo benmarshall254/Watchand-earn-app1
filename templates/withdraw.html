@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Withdraw Earnings</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .message {
+            margin-top: 15px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>💰 Withdraw Your Earnings</h2>
+    <form method="POST">
+        <label for="method">Payment Method</label>
+        <select name="method" id="method" required>
+            <option value="M-Pesa">M-Pesa</option>
+            <option value="PayPal">PayPal</option>
+        </select>
+
+        <label for="account">Account / Phone</label>
+        <input type="text" name="account" id="account" placeholder="Enter number or email" required>
+
+        <button type="submit">Request Withdrawal</button>
+    </form>
+
+    {% if message %}
+        <div class="message">{{ message }}</div>
+    {% endif %}
+</div>
+</body>
+</html>
