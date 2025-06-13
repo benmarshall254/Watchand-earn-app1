@@ -1,48 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch & Earn</title>
-  <script src="/static/script.js" defer></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fffbe6;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h2 {
-      color: #444;
-    }
-    video {
-      width: 90%;
-      max-width: 720px;
-      margin: 20px 0;
-      border-radius: 10px;
-    }
-    .timer {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      color: green;
-    }
-    .earn-msg {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #155724;
-      background: #d4edda;
-      padding: 10px 20px;
-      border-radius: 5px;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Watch & Earn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-  <h2>You're earning... 🎉</h2>
-  <div class="timer">Time watched: <span id="counter">0</span>s</div>
-  <video id="videoPlayer" src="{{ video.url }}" controls autoplay></video>
-  <div class="earn-msg" id="earnMsg">✅ You've earned $0.0001!</div>
+    <!-- AdSense banner ad (replace with your actual code) -->
+    <div class="adsense-banner">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+                crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-6332657251575161"
+             data-ad-slot="8486290217"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <h1>Watch & Earn</h1>
+    <div class="video-container">
+        <video id="videoPlayer" width="100%" controls autoplay>
+            <source src="{{ video.url }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <div class="timer-container">
+        <p id="countdown">Watching... <span id="timer">30</span> seconds</p>
+        <button id="claimReward" disabled onclick="claimReward()">Claim $0.0001</button>
+    </div>
+
+    <!-- AdSense pop-up ad on reward (optional) -->
+    <div id="rewardAd" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('rewardAd').style.display='none'">&times;</span>
+            <p>Thanks for watching! Please check this out:</p>
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
+                    crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-6332657251575161"
+                 data-ad-slot="8486290217"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+
+    <footer>
+        <a href="{{ url_for('index') }}">Back to Home</a>
+    </footer>
 </body>
 </html>
