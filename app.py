@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from werkzeug.utils import secure_filename
 import os, json, time
-from datetime import datetime
+from datetime import datetime, date
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_key'  # Change this in production
+app.secret_key = 'super_secret_key'  # CHANGE in production
 
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'mp4'}
@@ -13,10 +13,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
-
 DATA_FILE = 'data.json'
 
-# Initialize data.json if not exists
+# Initialize data.json
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
         json.dump({
@@ -24,7 +23,8 @@ if not os.path.exists(DATA_FILE):
             "videos": [],
             "users": {},
             "withdrawals": [],
-            "ad_clicks": 0
+            "ad_clicks": 0,
+            "daily_login_reward": 0.005
         }, f, indent=2)
 
 def load_data():
@@ -48,8 +48,7 @@ def count_visits():
 @app.route('/')
 def index():
     data = load_data()
-    videos = data.get("videos", [])
-    return render_template('index.html', videos=videos)
+    return render_template('index.html', videos=data.get("videos", []))
 
 @app.route('/watch/<video_id>')
 def watch(video_id):
@@ -66,16 +65,26 @@ def reward():
     user = data['users'].get(user_ip, {
         "earnings": 0,
         "watched": [],
-        "last_reward_time": 0
+        "last_reward_time": 0,
+        "last_login_date": "",
+        "daily_rewarded": False
     })
 
     current_time = int(time.time())
     if current_time - user.get("last_reward_time", 0) >= 30:
         user["earnings"] += 0.001
         user["last_reward_time"] = current_time
-        data['users'][user_ip] = user
-        save_data(data)
 
+    # Daily login bonus
+    today_str = str(date.today())
+    if user.get("last_login_date") != today_str and not user.get("daily_rewarded", False):
+        reward_amount = data.get("daily_login_reward", 0.005)
+        user["earnings"] += reward_amount
+        user["last_login_date"] = today_str
+        user["daily_rewarded"] = True
+
+    data['users'][user_ip] = user
+    save_data(data)
     return jsonify({"earnings": round(user["earnings"], 4)})
 
 @app.route('/earnings')
@@ -89,20 +98,27 @@ def earnings():
 def withdraw():
     user_ip = request.remote_addr
     data = load_data()
-    user = data['users'].get(user_ip, {})
+    user = data['users'].get(user_ip, {
+        "earnings": 0,
+        "watched": [],
+        "last_reward_time": 0
+    })
+
     if request.method == 'POST':
         method = request.form['method']
         account = request.form['account']
         amount = float(user.get("earnings", 0))
-        if amount >= 1:  # Minimum withdrawal
+        if amount >= 1:
             data['withdrawals'].append({
                 "user": user_ip,
                 "method": method,
                 "account": account,
                 "amount": round(amount, 4),
-                "timestamp": str(datetime.now())
+                "timestamp": str(datetime.now()),
+                "status": "Pending"
             })
             user['earnings'] = 0
+            data['users'][user_ip] = user
             save_data(data)
             return render_template('withdraw.html', message="Withdrawal requested!")
         else:
@@ -120,15 +136,29 @@ def admin_login():
         flash("Invalid credentials.")
     return render_template('login.html')
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
+
     data = load_data()
-    return render_template('dashboard.html', videos=data.get("videos", []),
+
+    # Admin can update daily login reward
+    if request.method == 'POST':
+        try:
+            reward = float(request.form['daily_reward'])
+            data['daily_login_reward'] = reward
+            save_data(data)
+            flash("Daily login reward updated.")
+        except:
+            flash("Invalid reward amount.")
+
+    return render_template('dashboard.html',
+                           videos=data.get("videos", []),
                            visitors=data.get("visitors", 0),
                            users=data.get("users", {}),
-                           withdrawals=data.get("withdrawals", []))
+                           withdrawals=data.get("withdrawals", []),
+                           daily_reward=data.get("daily_login_reward", 0.005))
 
 @app.route('/upload', methods=['POST'])
 def upload_video():
