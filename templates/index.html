@@ -1,46 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Watch & Earn</title>
-  <link rel="stylesheet" href="/static/style.css">
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161"
-     crossorigin="anonymous"></script>
+    <title>Watch & Earn</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
+        .video-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        a.button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: green;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Welcome to Watch & Earn</h1>
-
-  <!-- AdSense banner ad -->
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-6332657251575161"
-       data-ad-slot="8486290217"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-
-  <h2>Available Videos</h2>
-  <div class="video-list">
-    {% for video in videos %}
-      <div class="video-card">
-        <video width="320" height="200" controls>
-          <source src="{{ url_for('static', filename='videos/' + video.filename) }}" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        <p>{{ video.title }}</p>
-        <a href="{{ url_for('watch', video=video.filename) }}"><button>Watch & Earn</button></a>
-      </div>
-    {% endfor %}
-  </div>
-
-  <!-- Pop-up ad after page load -->
-  <script>
-    setTimeout(() => {
-      window.open("https://googleads.g.doubleclick.net/pagead/ads?client=ca-pub-6332657251575161", "_blank");
-    }, 10000); // Popup after 10 seconds
-  </script>
+    <h1>🎬 Watch & Earn</h1>
+    {% if videos %}
+        {% for video in videos %}
+        <div class="video-card">
+            <h3>{{ video.title }}</h3>
+            <video width="300" controls>
+                <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <a class="button" href="{{ url_for('watch', video_id=video.id) }}">Watch to Earn</a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No videos available yet.</p>
+    {% endif %}
 </body>
 </html>
