@@ -6,15 +6,12 @@ import os, json
 app = Flask(__name__)
 app.secret_key = 'admin123'
 
-# Secure cookies (for production hosting like Render or HTTPS)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = 'data.json'
 
-# Load or create data.json
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'r') as f:
         data = json.load(f)
@@ -30,12 +27,9 @@ else:
         "campaigns": []
     }
 
-# Save helper
 def save_data():
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
-
-# ------------------ Routes ------------------
 
 @app.route('/')
 def home():
@@ -134,6 +128,43 @@ def upload():
     save_data()
     return redirect('/admin-dashboard')
 
+@app.route('/delete/<int:index>', methods=['POST'])
+def delete(index):
+    if not session.get('admin'):
+        return redirect('/login')
+    if 0 <= index < len(data['videos']):
+        del data['videos'][index]
+        save_data()
+    return redirect('/admin-dashboard')
+
+@app.route('/approve-campaign/<int:index>', methods=['POST'])
+def approve_campaign(index):
+    if 0 <= index < len(data['campaigns']):
+        data['campaigns'][index]['status'] = 'approved'
+        save_data()
+    return redirect('/admin-dashboard')
+
+@app.route('/reject-campaign/<int:index>', methods=['POST'])
+def reject_campaign(index):
+    if 0 <= index < len(data['campaigns']):
+        data['campaigns'][index]['status'] = 'rejected'
+        save_data()
+    return redirect('/admin-dashboard')
+
+@app.route('/withdraw/<int:index>/approve', methods=['POST'])
+def approve_withdraw(index):
+    if 0 <= index < len(data['withdrawals']):
+        data['withdrawals'][index]['status'] = 'approved'
+        save_data()
+    return redirect('/admin-dashboard')
+
+@app.route('/withdraw/<int:index>/reject', methods=['POST'])
+def reject_withdraw(index):
+    if 0 <= index < len(data['withdrawals']):
+        data['withdrawals'][index]['status'] = 'rejected'
+        save_data()
+    return redirect('/admin-dashboard')
+
 @app.route('/watch/<int:video_id>')
 def watch(video_id):
     if 'user' not in session:
@@ -157,8 +188,11 @@ def reward(video_id):
             break
     return jsonify({"status": "ok", "earnings": data['users'][username]['earnings']})
 
-# ------------------ Server ------------------
+@app.route('/withdraw')
+def manual_withdraw_page():
+    return "<h2>Manual Withdrawal Instructions</h2><p>PayPal/M-Pesa steps here.</p>"
 
+# -------------- Run Server --------------
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     save_data()
