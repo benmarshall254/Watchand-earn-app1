@@ -4,7 +4,68 @@
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
   <style>
-    /* [CSS remains the same — no changes here for brevity] */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .top-links {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .top-links a {
+      margin: 0 10px;
+      text-decoration: none;
+      padding: 8px 15px;
+      background-color: #3498db;
+      color: white;
+      border-radius: 5px;
+    }
+    .top-links a:hover {
+      background-color: #2980b9;
+    }
+    .section {
+      margin-top: 40px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+    .inline-form {
+      display: inline-block;
+      margin: 0 2px;
+    }
+    button {
+      padding: 6px 12px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e8449;
+    }
   </style>
 </head>
 <body>
@@ -20,13 +81,13 @@
   <p>💰 AdSense Earnings (Estimated): Check in your AdSense dashboard</p>
 
   <!-- 🎥 Video Section -->
-  <!-- [UNCHANGED VIDEO TABLE SECTION] -->
+  <!-- [UNCHANGED VIDEO TABLE SECTION - include if needed] -->
 
   <!-- 📺 YouTuber Submissions -->
-  <!-- [UNCHANGED CAMPAIGN SECTION] -->
+  <!-- [UNCHANGED CAMPAIGN SECTION - include if needed] -->
 
   <!-- 🧑‍💻 User Earnings -->
-  <!-- [UNCHANGED USER EARNINGS SECTION] -->
+  <!-- [UNCHANGED USER EARNINGS SECTION - include if needed] -->
 
   <!-- 💸 Withdrawal Requests -->
   <div class="section">
@@ -88,7 +149,7 @@
           }
         })
         .catch(err => console.error('Check failed:', err));
-    }, 5000);
+    }, 5000); // every 5 seconds
   </script>
 
 </body>
