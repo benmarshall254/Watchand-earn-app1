@@ -1,93 +1,61 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from werkzeug.utils import secure_filename
-from datetime import datetime
-import os, json, smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import pyrebase
+import os
 
-# 🔧 Firebase Config
-firebase_config = {
-    "apiKey": "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
-    "authDomain": "surebet-prefictions.firebaseapp.com",
-    "databaseURL": "",
-    "projectId": "surebet-prefictions",
-    "storageBucket": "surebet-prefictions.appspot.com",
-    "messagingSenderId": "",
-    "appId": ""
-}
-
-firebase = pyrebase.initialize_app(firebase_config)
-auth = firebase.auth()
-
-# 🔐 Flask Setup
+# 🔧 Flask App Setup
 app = Flask(__name__)
 app.secret_key = 'admin123'
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 UPLOAD_FOLDER = 'static/uploads'
-DATA_FILE = 'data.json'
-ADMIN_EMAIL = 'your_admin_email@example.com'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# 📦 Load or Init Data
-if os.path.exists(DATA_FILE):
-    with open(DATA_FILE, 'r') as f:
-        data = json.load(f)
-else:
-    data = {
-        "visitors": 0,
-        "videos": [],
-        "users": {},
-        "withdrawals": [],
-        "daily_logins": {},
-        "ad_clicks": 0,
-        "daily_login_reward": 0.005,
-        "campaigns": []
+# 📦 In-memory data
+users = {
+    "user1": {"earnings": 0.50},
+    "user2": {"earnings": 1.75}
+}
+withdrawals = []
+videos = []
+youtuber_campaigns = []
+
+# ⚙️ Admin settings
+def get_settings():
+    return {
+        "reward_per_session": 0.001  # USD earned per 30s watch
     }
 
-def save_data():
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+settings = get_settings()
 
-# 📧 Email Admin
-def send_admin_email(subject, content):
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = 'noreply@yourdomain.com'
-        msg['To'] = ADMIN_EMAIL
-        msg['Subject'] = subject
-        msg.attach(MIMEText(content, 'plain'))
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login('noreply@yourdomain.com', 'your_email_password')  # Use env vars for production
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print("❌ Email failed:", e)
+# -------------------- PUBLIC ROUTES --------------------
 
-# 🎧 Serve Sound
-@app.route('/notify.mp3')
-def serve_notification_sound():
-    return send_from_directory('static', 'notify.mp3')
-
-# 👁️ Visitor Count
 @app.route('/')
-def home():
-    data['visitors'] += 1
-    save_data()
-    return render_template('index.html')
+def index():
+    video_list = []
+    for i, video in enumerate(videos):
+        video_list.append({**video, "id": i})
+    return render_template('index.html', videos=video_list)
 
-# 👤 Admin Login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/earnings')
+def get_earnings():
+    return jsonify({"earnings": 1.25})
+
+@app.route('/watch/<int:video_id>')
+def watch(video_id):
+    if 0 <= video_id < len(videos):
+        return render_template('watch.html', video=videos[video_id], video_id=video_id, reward=settings["reward_per_session"])
+    return "Video not found", 404
+
+# -------------------- ADMIN AUTH --------------------
+
+@app.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
-        if email == 'admin@example.com' and password == 'admin123':
+        if username == 'admin' and password == 'admin':
             session['admin'] = True
             return redirect('/admin-dashboard')
-        flash('Invalid login')
+        else:
+            flash("Invalid credentials.")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -95,52 +63,111 @@ def logout():
     session.clear()
     return redirect('/')
 
-# 🎯 Dashboard
+# -------------------- ADMIN DASHBOARD --------------------
+
 @app.route('/admin-dashboard')
 def admin_dashboard():
     if not session.get('admin'):
-        return redirect('/login')
-    return render_template('admin-dashboard.html', videos=data['videos'], withdrawals=data['withdrawals'])
+        return redirect('/admin-login')
+    return render_template('dashboard.html', users=users, withdrawals=withdrawals, videos=videos, visitors=123, youtuber_campaigns=youtuber_campaigns, settings=settings)
 
-# 📤 Upload Video
+@app.route('/update-settings', methods=['POST'])
+def update_settings():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    try:
+        settings["reward_per_session"] = float(request.form['reward_per_session'])
+        flash("Settings updated.")
+    except:
+        flash("Invalid input. Please enter a number.")
+    return redirect('/admin-dashboard')
+
 @app.route('/upload', methods=['POST'])
 def upload():
     if not session.get('admin'):
-        return redirect('/login')
-    if 'video' not in request.files:
-        flash('No file part')
-        return redirect('/admin-dashboard')
-    file = request.files['video']
-    if file.filename == '':
-        flash('No selected file')
-        return redirect('/admin-dashboard')
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-    data['videos'].append({
-        "filename": filename,
-        "upload_time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    })
-    save_data()
+        return redirect('/admin-login')
+    if 'video' in request.files:
+        video = request.files['video']
+        title = request.form['title']
+        thumbnail = request.form.get('thumbnail', '')
+        filename = secure_filename(video.filename)
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        video.save(path)
+        videos.append({"title": title, "filename": filename, "thumbnail": thumbnail})
     return redirect('/admin-dashboard')
 
-# 🗑️ Delete Video
-@app.route('/delete/<int:index>', methods=['POST'])
-def delete(index):
+@app.route('/delete/<int:vid_id>', methods=['POST'])
+def delete_video(vid_id):
     if not session.get('admin'):
-        return redirect('/login')
-    if 0 <= index < len(data['videos']):
-        del data['videos'][index]
-        save_data()
+        return redirect('/admin-login')
+    if 0 <= vid_id < len(videos):
+        del videos[vid_id]
     return redirect('/admin-dashboard')
 
-# 🔁 Withdrawal Count
-@app.route('/withdrawal-count')
-def withdrawal_count():
-    return jsonify({"count": len(data['withdrawals'])})
+@app.route('/withdraw')
+def withdraw_page():
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    return render_template('withdraw.html', withdrawals=withdrawals)
 
-# 🚀 Start Server
+@app.route('/withdraw/<int:req_id>/approve', methods=['POST'])
+def approve_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= req_id < len(withdrawals):
+        withdrawals[req_id]['status'] = 'approved'
+    return redirect('/admin-dashboard')
+
+@app.route('/withdraw/<int:req_id>/reject', methods=['POST'])
+def reject_withdraw(req_id):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= req_id < len(withdrawals):
+        withdrawals[req_id]['status'] = 'rejected'
+    return redirect('/admin-dashboard')
+
+# -------------------- YOUTUBER SUBMISSION --------------------
+
+@app.route('/youtuber-upload', methods=['GET', 'POST'])
+def youtuber_upload():
+    if request.method == 'POST':
+        title = request.form['title']
+        youtube_link = request.form['youtube_link']
+        submitted_by = request.form['submitted_by']
+        youtuber_campaigns.append({
+            'title': title,
+            'youtube_link': youtube_link,
+            'submitted_by': submitted_by,
+            'status': 'pending'
+        })
+        return "Submitted"
+    return '''
+        <form method="POST">
+            Title: <input name="title"><br>
+            YouTube Link: <input name="youtube_link"><br>
+            Submitted By: <input name="submitted_by"><br>
+            <input type="submit" value="Submit">
+        </form>
+    '''
+
+@app.route('/approve-campaign/<int:index>', methods=['POST'])
+def approve_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= index < len(youtuber_campaigns):
+        youtuber_campaigns[index]['status'] = 'approved'
+    return redirect('/admin-dashboard')
+
+@app.route('/reject-campaign/<int:index>', methods=['POST'])
+def reject_campaign(index):
+    if not session.get('admin'):
+        return redirect('/admin-login')
+    if 0 <= index < len(youtuber_campaigns):
+        youtuber_campaigns[index]['status'] = 'rejected'
+    return redirect('/admin-dashboard')
+
+# -------------------- RUN APP --------------------
+
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    save_data()
     app.run(debug=True, port=5000)
