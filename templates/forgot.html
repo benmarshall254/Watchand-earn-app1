@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reset Password - Watch & Earn</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ee9ca7, #ffdde1);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .forgot-container {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+
+    button {
+      background: #ee9ca7;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ff6f91;
+    }
+
+    .message {
+      margin-top: 15px;
+      color: green;
+    }
+
+    .error {
+      margin-top: 15px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="forgot-container">
+    <h2>🔒 Forgot Password?</h2>
+    <p>Enter your email and we’ll send a reset link.</p>
+    <input type="email" id="email" placeholder="Email address" required>
+    <button onclick="resetPassword()">Send Reset Link</button>
+
+    <div id="feedback" class="message"></div>
+
+    <script>
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+
+      function resetPassword() {
+        const email = document.getElementById("email").value;
+        const feedback = document.getElementById("feedback");
+
+        auth.sendPasswordResetEmail(email)
+          .then(() => {
+            feedback.innerHTML = "✅ Reset email sent. Check your inbox.";
+            feedback.style.color = "green";
+          })
+          .catch(error => {
+            feedback.innerHTML = "⚠️ " + error.message;
+            feedback.style.color = "red";
+          });
+      }
+    </script>
+  </div>
+</body>
+</html>
