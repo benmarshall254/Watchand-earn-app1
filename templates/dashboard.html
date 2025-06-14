@@ -1,172 +1,280 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f3f3;
-      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f6fc;
+      margin: 0;
+      padding: 0 20px;
     }
-    h1, h2 {
-      color: #333;
+
+    h1 {
+      color: #0a3d62;
+      text-align: center;
+      margin-top: 30px;
     }
+
+    .top-links {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .top-links a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #fff;
+      background: #0a3d62;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: background 0.3s ease;
+    }
+
+    .top-links a:hover {
+      background: #3c6382;
+    }
+
+    p {
+      text-align: center;
+      color: #34495e;
+      font-weight: bold;
+    }
+
+    h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #0a3d62;
+      padding-bottom: 5px;
+      margin-top: 40px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 30px;
-      background: #fff;
+      margin: 20px auto;
+      background: #ffffff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 6px;
+      overflow: hidden;
     }
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-    th, td {
-      padding: 10px;
+
+    th {
+      background-color: #2980b9;
+      color: #ffffff;
+      padding: 12px;
       text-align: left;
     }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+      background-color: #f1f9ff;
+    }
+
     form {
-      margin-bottom: 30px;
-      background: #fff;
+      background: #ffffff;
       padding: 20px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 8px;
     }
-    input, button {
-      padding: 8px;
-      margin-right: 10px;
+
+    input[type="text"],
+    input[type="file"],
+    button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      max-width: 300px;
+      display: block;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    .top-links {
-      margin-bottom: 20px;
-    }
-    .top-links a {
-      margin-right: 20px;
-      text-decoration: none;
-      color: #007BFF;
+
+    button {
+      background-color: #27ae60;
+      color: white;
       font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #219150;
+    }
+
+    .inline-form {
+      display: inline;
+    }
+
+    em {
+      color: #888;
+      font-style: italic;
+    }
+
+    .section {
+      margin-bottom: 40px;
     }
   </style>
 </head>
-<body>  <h1>Admin Dashboard</h1>  <div class="top-links">
-    <a href="/withdraw">Manual Withdrawals Page</a>
+<body>
+
+  <h1>Admin Dashboard</h1>
+
+  <div class="top-links">
+    <a href="/withdraw">Manual Withdrawals</a>
     <a href="/logout">Logout</a>
-  </div>  <p><strong>Silent Visitor Count:</strong> {{ visitors }}</p>
-  <p><strong>Total Site Earnings (AdSense):</strong> Estimated — Check in your AdSense dashboard</p>  <!-- 🎥 Video Management -->  <h2>All Uploaded Videos</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Filename</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for video in videos %}
-      <tr>
-        <td>{{ video.title }}</td>
-        <td>{{ video.filename }}</td>
-        <td>
-          <form method="POST" action="/delete/{{ video.id }}">
-            <button type="submit">Delete</button>
-          </form>
-        </td>
-      {% endfor %}
-    </tbody>
-  </table>  <!-- ⬆ Upload Form -->  <h2>Upload New Video</h2>
-  <form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="text" name="title" placeholder="Video Title" required>
-    <input type="text" name="thumbnail" placeholder="Thumbnail URL (optional)">
-    <input type="file" name="video" accept="video/mp4" required>
-    <button type="submit">Upload</button>
-  </form>  <!-- 👤 YouTuber Campaign Submissions -->  <h2>YouTuber Campaign Submissions</h2>
-  {% if youtuber_campaigns %}
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>YouTube Link</th>
-        <th>Submitted By</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for campaign in youtuber_campaigns %}
-      <tr>
-        <td>{{ campaign.title }}</td>
-        <td><a href="{{ campaign.youtube_link }}" target="_blank">Watch</a></td>
-        <td>{{ campaign.submitted_by }}</td>
-        <td>{{ campaign.status }}</td>
-        <td>
-          {% if campaign.status == 'pending' %}
-          <form method="POST" action="/approve-campaign/{{ loop.index0 }}" style="display:inline">
-            <button type="submit">Approve</button>
-          </form>
-          <form method="POST" action="/reject-campaign/{{ loop.index0 }}" style="display:inline">
-            <button type="submit">Reject</button>
-          </form>
-          {% else %}
-          <em>{{ campaign.status }}</em>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-    <p>No YouTuber submissions yet.</p>
-  {% endif %}  <!-- 👥 Earnings per User -->  <h2>User Earnings</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Earnings ($)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user, data in users.items() %}
-      <tr>
-        <td>{{ user }}</td>
-        <td>{{ '%.4f' % data['earnings'] }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>  <!-- 💸 Withdrawal Requests -->  <h2>Withdrawal Requests</h2>
-  {% if withdrawals %}
-  <table>
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Amount ($)</th>
-        <th>Method</th>
-        <th>Details</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for request in withdrawals %}
-      <tr>
-        <td>{{ request.user }}</td>
-        <td>{{ '%.2f' % request.amount }}</td>
-        <td>{{ request.method }}</td>
-        <td>{{ request.details }}</td>
-        <td>{{ request.status }}</td>
-        <td>
-          {% if request.status == 'pending' %}
-          <form method="POST" action="/withdraw/{{ loop.index0 }}/approve" style="display:inline">
-            <button type="submit">Approve</button>
-          </form>
-          <form method="POST" action="/withdraw/{{ loop.index0 }}/reject" style="display:inline">
-            <button type="submit">Reject</button>
-          </form>
-          {% else %}
-          <em>{{ request.status }}</em>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-    <p>No withdrawal requests yet.</p>
-  {% endif %}</body>
+  </div>
+
+  <p>👁️ Silent Visitor Count: <strong>{{ visitors }}</strong></p>
+  <p>💰 AdSense Earnings (Estimated): Check in your AdSense dashboard</p>
+
+  <!-- 🎥 Video Section -->
+  <div class="section">
+    <h2>🎞️ All Uploaded Videos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Filename</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for video in videos %}
+        <tr>
+          <td>{{ video.title }}</td>
+          <td>{{ video.filename }}</td>
+          <td>
+            <form method="POST" action="/delete/{{ loop.index0 }}" class="inline-form">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>⬆️ Upload New Video</h2>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Video Title" required>
+      <input type="file" name="thumbnail" accept="image/*">
+      <input type="file" name="video" accept="video/mp4" required>
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- 📺 YouTuber Submissions -->
+  <div class="section">
+    <h2>📢 YouTuber Campaign Submissions</h2>
+    {% if youtuber_campaigns %}
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>YouTube Link</th>
+          <th>Submitted By</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for campaign in youtuber_campaigns %}
+        <tr>
+          <td>{{ campaign.title }}</td>
+          <td><a href="{{ campaign.youtube_link }}" target="_blank">Watch</a></td>
+          <td>{{ campaign.submitted_by }}</td>
+          <td>{{ campaign.status }}</td>
+          <td>
+            {% if campaign.status == 'pending' %}
+            <form method="POST" action="/approve-campaign/{{ loop.index0 }}" class="inline-form">
+              <button type="submit">Approve</button>
+            </form>
+            <form method="POST" action="/reject-campaign/{{ loop.index0 }}" class="inline-form">
+              <button type="submit" style="background:#e74c3c;">Reject</button>
+            </form>
+            {% else %}
+            <em>{{ campaign.status }}</em>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p style="text-align:center;">No YouTuber submissions yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- 🧑‍💻 User Earnings -->
+  <div class="section">
+    <h2>👥 User Earnings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Earnings ($)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user, data in users.items() %}
+        <tr>
+          <td>{{ user }}</td>
+          <td>{{ '%.4f' % data['earnings'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 💸 Withdrawal Requests -->
+  <div class="section">
+    <h2>💸 Withdrawal Requests</h2>
+    {% if withdrawals %}
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Amount ($)</th>
+          <th>Method</th>
+          <th>Details</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for request in withdrawals %}
+        <tr>
+          <td>{{ request.user }}</td>
+          <td>{{ '%.2f' % request.amount }}</td>
+          <td>{{ request.method }}</td>
+          <td>{{ request.details }}</td>
+          <td>{{ request.status }}</td>
+          <td>
+            {% if request.status == 'pending' %}
+            <form method="POST" action="/withdraw/{{ loop.index0 }}/approve" class="inline-form">
+              <button type="submit">Approve</button>
+            </form>
+            <form method="POST" action="/withdraw/{{ loop.index0 }}/reject" class="inline-form">
+              <button type="submit" style="background:#c0392b;">Reject</button>
+            </form>
+            {% else %}
+            <em>{{ request.status }}</em>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p style="text-align:center;">No withdrawal requests yet.</p>
+    {% endif %}
+  </div>
+
+</body>
 </html>
