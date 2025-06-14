@@ -66,6 +66,39 @@
     button:hover {
       background-color: #1e8449;
     }
+    /* New styles for settings form */
+    form.settings-form label {
+      display: inline-block;
+      width: 220px;
+      font-weight: bold;
+      text-align: right;
+      margin-right: 10px;
+    }
+    form.settings-form input[type="number"] {
+      width: 100px;
+      padding: 5px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      text-align: right;
+    }
+    form.settings-form button {
+      margin-left: 230px;
+      padding: 8px 20px;
+      font-size: 16px;
+    }
+    .flash-message {
+      background-color: #dff0d8;
+      border: 1px solid #d0e9c6;
+      padding: 10px;
+      margin-bottom: 15px;
+      color: #3c763d;
+      border-radius: 4px;
+      width: 50%;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -77,17 +110,36 @@
     <a href="/logout">Logout</a>
   </div>
 
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-message">
+        {% for msg in messages %}
+          <p>{{ msg }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <p>👁️ Silent Visitor Count: <strong>{{ visitors }}</strong></p>
   <p>💰 AdSense Earnings (Estimated): Check in your AdSense dashboard</p>
 
-  <!-- 🎥 Video Section -->
-  <!-- [UNCHANGED VIDEO TABLE SECTION - include if needed] -->
+  <!-- ⚙️ Settings Section -->
+  <div class="section">
+    <h2>⚙️ Settings</h2>
+    <form method="POST" class="settings-form" action="{{ url_for('dashboard') }}">
+      <label for="min_withdraw_amount">Minimum Withdrawable Amount ($):</label>
+      <input type="number" step="0.01" name="min_withdraw_amount" id="min_withdraw_amount" value="{{ settings.min_withdraw_amount }}" required><br>
 
-  <!-- 📺 YouTuber Submissions -->
-  <!-- [UNCHANGED CAMPAIGN SECTION - include if needed] -->
+      <label for="daily_login_reward">Daily Login Reward ($):</label>
+      <input type="number" step="0.01" name="daily_login_reward" id="daily_login_reward" value="{{ settings.daily_login_reward }}" required><br>
 
-  <!-- 🧑‍💻 User Earnings -->
-  <!-- [UNCHANGED USER EARNINGS SECTION - include if needed] -->
+      <label for="watch_reward_amount">Watch Reward Amount ($):</label>
+      <input type="number" step="0.01" name="watch_reward_amount" id="watch_reward_amount" value="{{ settings.watch_reward_amount }}" required><br>
+
+      <button type="submit">Update Settings</button>
+    </form>
+  </div>
 
   <!-- 💸 Withdrawal Requests -->
   <div class="section">
