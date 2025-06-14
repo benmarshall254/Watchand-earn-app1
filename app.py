@@ -12,7 +12,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 DATA_FILE = 'data.json'
 
-# Load and Save Helpers
+# --- Helper Functions ---
 def load_data():
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
@@ -21,9 +21,19 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-# Load data at startup
-data = load_data()
+def load_rules():
+    try:
+        with open('rules.txt', 'r') as f:
+            return f.read().splitlines()
+    except FileNotFoundError:
+        return ["No reward rules found."]
 
+def save_rules(new_rules):
+    with open('rules.txt', 'w') as f:
+        f.write('\n'.join(new_rules))
+
+# --- Load data on startup ---
+data = load_data()
 videos = data['videos']
 users = data['users']
 visitor_count = data['visitors']
@@ -34,37 +44,58 @@ settings = {
     'watch_reward_amount': data.get('watch_reward_amount', 0.01)
 }
 
+# --- Routes ---
+
 @app.route('/')
 def index():
     global visitor_count
     visitor_count += 1
     data['visitors'] = visitor_count
     save_data(data)
+
+    if session.get('user') and session.pop('show_rules', False):
+        return redirect(url_for('rules_popup'))
+
     return render_template('index.html', videos=videos, visitors=visitor_count)
 
-# Admin login
+# --- User Login ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = users.get(username)
+        if user and (password == user['password'] or check_password_hash(user['password'], password)):
+            session['user'] = username
+            session['show_rules'] = True
+            return redirect(url_for('index'))
+        flash("Invalid login details.")
+    return render_template('login.html')
+
+# --- Admin Login ---
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         if username == 'admin' and (
-            password == data['users']['admin']['password'] or
-            check_password_hash(data['users']['admin']['password'], password)
+            password == users['admin']['password'] or
+            check_password_hash(users['admin']['password'], password)
         ):
             session['admin'] = True
             return redirect(url_for('dashboard'))
         flash("Wrong credentials")
     return render_template('login.html')
 
-# Admin logout
+# --- Logout ---
 @app.route('/logout')
 def logout():
     session.pop('admin', None)
+    session.pop('user', None)
     flash("Logged out successfully.")
-    return redirect(url_for('admin_login'))
+    return redirect(url_for('login'))
 
-# Admin dashboard
+# --- Dashboard ---
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if not session.get('admin'):
@@ -87,7 +118,7 @@ def dashboard():
 
     return render_template('dashboard.html', videos=videos, visitors=visitor_count, settings=settings, withdrawals=withdrawals)
 
-# Upload new video
+# --- Upload Video ---
 @app.route('/upload', methods=['POST'])
 def upload():
     if not session.get('admin'):
@@ -117,11 +148,11 @@ def upload():
     flash(f"Video '{title}' uploaded successfully!")
     return redirect(url_for('dashboard'))
 
-# Approve/Reject Withdrawals
+# --- Withdraw Management ---
 @app.route('/withdraw/<int:index>/approve', methods=['POST'])
 def approve_withdraw(index):
     if session.get('admin'):
-        data['withdrawals'][index]['status'] = 'approved'
+        withdrawals[index]['status'] = 'approved'
         save_data(data)
         flash("Withdrawal approved.")
     return redirect(url_for('dashboard'))
@@ -129,17 +160,16 @@ def approve_withdraw(index):
 @app.route('/withdraw/<int:index>/reject', methods=['POST'])
 def reject_withdraw(index):
     if session.get('admin'):
-        data['withdrawals'][index]['status'] = 'rejected'
+        withdrawals[index]['status'] = 'rejected'
         save_data(data)
         flash("Withdrawal rejected.")
     return redirect(url_for('dashboard'))
 
-# Notify client if a new withdrawal arrives
 @app.route('/withdrawal-count')
 def withdrawal_count():
-    return jsonify({'count': len(data['withdrawals'])})
+    return jsonify({'count': len(withdrawals)})
 
-# Password update page
+# --- Admin Password Change ---
 @app.route('/admin/password', methods=['GET', 'POST'])
 def change_password():
     if not session.get('admin'):
@@ -148,11 +178,11 @@ def change_password():
     if request.method == 'POST':
         current = request.form['current_password']
         new = request.form['new_password']
-        stored = data['users']['admin']['password']
+        stored = users['admin']['password']
 
         if current == stored or check_password_hash(stored, current):
             hashed = generate_password_hash(new)
-            data['users']['admin']['password'] = hashed
+            users['admin']['password'] = hashed
             save_data(data)
             flash("Password changed successfully.")
         else:
@@ -161,6 +191,28 @@ def change_password():
 
     return render_template('password.html')
 
+# --- Rules Popup Route ---
+@app.route('/rules-popup')
+def rules_popup():
+    rule_lines = load_rules()
+    return render_template('rules_popup.html', rules=rule_lines)
+
+# --- Admin Edit Reward Rules ---
+@app.route('/admin/rules', methods=['GET', 'POST'])
+def edit_rules():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+
+    if request.method == 'POST':
+        new_rules = request.form.get('rules', '').strip().splitlines()
+        save_rules(new_rules)
+        flash("Rules updated successfully!")
+        return redirect(url_for('edit_rules'))
+
+    current_rules = '\n'.join(load_rules())
+    return render_template('edit_rules.html', rules=current_rules)
+
+# --- Run App ---
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)
