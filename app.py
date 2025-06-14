@@ -28,7 +28,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = 'data.json'
 ADMIN_EMAIL = 'your_admin_email@example.com'
 
-# Load data
+# Load or initialize data
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'r') as f:
         data = json.load(f)
@@ -63,21 +63,17 @@ def send_admin_email(subject, content):
     except Exception as e:
         print("Email failed:", e)
 
-# ✅ Serve notification sound
-@app.route('/noty.mp3')
+# ✅ Serve notification sound as /notify.mp3
+@app.route('/notify.mp3')
 def serve_notification_sound():
-    return send_from_directory('static', 'noty.mp3')
+    return send_from_directory('static', 'notify.mp3')
 
-# ✅ Withdrawal count route (Step 2)
+# ✅ Withdrawal count route used by JS for notification
 @app.route('/withdrawal-count')
 def withdrawal_count():
     return jsonify({"count": len(data['withdrawals'])})
 
-# 👇 Your other routes go here (already correct, skip duplication)
-# home, login, register, forgot-password, logout
-# user-dashboard, admin-dashboard, upload
-
-# ✅ Fixed delete route
+# ✅ Delete video
 @app.route('/delete/<int:index>', methods=['POST'])
 def delete(index):
     if not session.get('admin'):
@@ -87,7 +83,7 @@ def delete(index):
         save_data()
     return redirect('/admin-dashboard')
 
-# Withdraw route (already correct)
+# ✅ Add other routes as before (not duplicated here)
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
