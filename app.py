@@ -2,16 +2,31 @@ from flask import Flask, render_template, request, redirect, session, flash, url
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os, json
+import pyrebase
+
+# Firebase config
+firebase_config = {
+    "apiKey": "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
+    "authDomain": "surebet-prefictions.firebaseapp.com",
+    "databaseURL": "",
+    "projectId": "surebet-prefictions",
+    "storageBucket": "surebet-prefictions.appspot.com",
+    "messagingSenderId": "",
+    "appId": ""
+}
+
+firebase = pyrebase.initialize_app(firebase_config)
+auth = firebase.auth()
 
 app = Flask(__name__)
 app.secret_key = 'admin123'
-
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = 'data.json'
 
+# Load data.json or initialize
 if os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'r') as f:
         data = json.load(f)
@@ -30,6 +45,8 @@ else:
 def save_data():
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
+
+# ---------------- ROUTES ----------------
 
 @app.route('/')
 def home():
@@ -77,6 +94,17 @@ def register():
             flash("Account created. Please log in.")
             return redirect('/login')
     return render_template('register.html')
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email'].strip()
+        try:
+            auth.send_password_reset_email(email)
+            flash("Password reset email sent. Check your inbox.")
+        except Exception as e:
+            flash("Error sending reset email. Please check the email or try again later.")
+    return render_template('forgot_password.html')
 
 @app.route('/logout')
 def logout():
@@ -192,7 +220,7 @@ def reward(video_id):
 def manual_withdraw_page():
     return "<h2>Manual Withdrawal Instructions</h2><p>PayPal/M-Pesa steps here.</p>"
 
-# -------------- Run Server --------------
+# Run Server
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     save_data()
