@@ -1,0 +1,26 @@
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['username'].strip()
+        password = request.form['password'].strip()
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        res = requests.post(f"{FIREBASE_AUTH_URL}:signUp?key={FIREBASE_API_KEY}", json=payload)
+        if res.status_code == 200:
+            data['users'][email] = {
+                "password": password,
+                "earnings": 0.0,
+                "watched": [],
+                "last_reward_time": 0,
+                "last_login_date": "",
+                "daily_rewarded": False
+            }
+            save_data()
+            flash("Account created. Please log in.")
+            return redirect('/login')
+        else:
+            flash("Registration failed: " + res.json().get("error", {}).get("message", "Unknown error"))
+    return render_template('register.html')
