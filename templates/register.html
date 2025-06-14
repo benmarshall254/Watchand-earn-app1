@@ -1,26 +1,115 @@
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        email = request.form['username'].strip()
-        password = request.form['password'].strip()
-        payload = {
-            "email": email,
-            "password": password,
-            "returnSecureToken": True
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Watch & Earn</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
         }
-        res = requests.post(f"{FIREBASE_AUTH_URL}:signUp?key={FIREBASE_API_KEY}", json=payload)
-        if res.status_code == 200:
-            data['users'][email] = {
-                "password": password,
-                "earnings": 0.0,
-                "watched": [],
-                "last_reward_time": 0,
-                "last_login_date": "",
-                "daily_rewarded": False
-            }
-            save_data()
-            flash("Account created. Please log in.")
-            return redirect('/login')
-        else:
-            flash("Registration failed: " + res.json().get("error", {}).get("message", "Unknown error"))
-    return render_template('register.html')
+
+        .register-container {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #43cea2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #36b89d;
+        }
+
+        .error {
+            background: #ffdddd;
+            color: #d8000c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        a {
+            display: block;
+            margin-top: 10px;
+            color: #185a9d;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .bottom-links {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>📝 Create Your Account</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" action="{{ url_for('register') }}">
+            <label for="username">Username</label>
+            <input type="text" name="username" placeholder="Choose a username" required autocomplete="username">
+
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="Create a password" required autocomplete="new-password">
+
+            <button type="submit">Register</button>
+        </form>
+
+        <div class="bottom-links">
+            <a href="/login">Already have an account? Login</a>
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
