@@ -8,6 +8,9 @@ app.secret_key = 'admin123'
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Visitor counter
+visitor_count = 0
+
 # In-memory data
 users = {
     "user1": {"earnings": 0.50},
@@ -28,8 +31,10 @@ settings = get_settings()
 # -------------------- PUBLIC ROUTES --------------------
 @app.route('/')
 def index():
+    global visitor_count
+    visitor_count += 1
     video_list = [{**video, "id": i} for i, video in enumerate(videos)]
-    return render_template('index.html', videos=video_list)
+    return render_template('index.html', videos=video_list, visitors=visitor_count)
 
 @app.route('/earnings')
 def get_earnings():
@@ -64,7 +69,7 @@ def logout():
 def admin_dashboard():
     if not session.get('admin'):
         return redirect('/admin-login')
-    return render_template('dashboard.html', users=users, withdrawals=withdrawals, videos=videos, visitors=123, youtuber_campaigns=youtuber_campaigns, settings=settings)
+    return render_template('dashboard.html', users=users, withdrawals=withdrawals, videos=videos, visitors=visitor_count, youtuber_campaigns=youtuber_campaigns, settings=settings)
 
 @app.route('/update-settings', methods=['POST'])
 def update_settings():
