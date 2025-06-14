@@ -1,115 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Register - Watch & Earn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            background: linear-gradient(135deg, #43cea2, #185a9d);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-        }
+  <meta charset="UTF-8">
+  <title>Register - Watch & Earn</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-        .register-container {
-            background: white;
-            padding: 30px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
+    .register-container {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
 
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
 
-        label {
-            display: block;
-            text-align: left;
-            margin: 10px 0 5px;
-            color: #555;
-        }
+    button {
+      background: #43cea2;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 15px;
-        }
+    button:hover {
+      background: #2e9d8a;
+    }
 
-        button {
-            background: #43cea2;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+    .message {
+      margin-top: 15px;
+      color: green;
+    }
 
-        button:hover {
-            background: #36b89d;
-        }
-
-        .error {
-            background: #ffdddd;
-            color: #d8000c;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        a {
-            display: block;
-            margin-top: 10px;
-            color: #185a9d;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .bottom-links {
-            margin-top: 20px;
-        }
-    </style>
+    .error {
+      margin-top: 15px;
+      color: red;
+    }
+  </style>
 </head>
 <body>
-    <div class="register-container">
-        <h2>📝 Create Your Account</h2>
+  <div class="register-container">
+    <h2>📝 Create Your Account</h2>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="error">{{ messages[0] }}</div>
-            {% endif %}
-        {% endwith %}
+    <input type="email" id="email" placeholder="Email address" required>
+    <input type="password" id="password" placeholder="Create password" required>
+    <button onclick="registerUser()">Register</button>
 
-        <form method="post" action="{{ url_for('register') }}">
-            <label for="username">Username</label>
-            <input type="text" name="username" placeholder="Choose a username" required autocomplete="username">
+    <div id="feedback" class="message"></div>
 
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="Create a password" required autocomplete="new-password">
+    <script>
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
 
-            <button type="submit">Register</button>
-        </form>
+      function registerUser() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const feedback = document.getElementById("feedback");
 
-        <div class="bottom-links">
-            <a href="/login">Already have an account? Login</a>
-            <a href="/">← Back to Home</a>
-        </div>
-    </div>
+        auth.createUserWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            feedback.innerHTML = "✅ Registration successful. Please log in.";
+            feedback.style.color = "green";
+          })
+          .catch((error) => {
+            feedback.innerHTML = "⚠️ " + error.message;
+            feedback.style.color = "red";
+          });
+      }
+    </script>
+  </div>
 </body>
 </html>
