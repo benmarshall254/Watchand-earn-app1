@@ -1,167 +1,42 @@
 <!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Watch & Earn</title>
-    <style>
-        body {
-            font-family: Arial;
-            padding: 20px;
-            background: #f9f9f9;
-        }
-        .video-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .reward {
-            margin-top: 20px;
-            font-weight: bold;
-            color: green;
-        }
-        .countdown {
-            font-size: 18px;
-            margin-top: 10px;
-            color: #555;
-        }
-        .ad-top, .ad-bottom, .ad-inside {
-            margin: 15px 0;
-        }
-        #popupAd, #popupReward {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        .popup-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 90%;
-        }
-        .popup-content p {
-            font-size: 16px;
-        }
-        .popup-count {
-            font-size: 22px;
-            color: red;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch & Earn</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script>
+    let timer;
+    let secondsWatched = 0;function startTimer() {
+  timer = setInterval(() => {
+    secondsWatched++;
+    document.getElementById("timer").innerText = secondsWatched + "s";
+
+    if (secondsWatched >= 30) {
+      clearInterval(timer);
+      document.getElementById("rewardForm").style.display = 'block';
+    }
+  }, 1000);
+}
+
+  </script>
 </head>
-<body><!-- ✅ Top AdSense Banner --><div class="ad-top">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6332657251575161" data-ad-slot="8486290217" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div><h2>🎥 Watch and Earn</h2><!-- 📺 Video + Countdown --><div class="video-container">
-    <!-- Inside Ad -->
-    <div class="ad-inside">
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
-      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6332657251575161" data-ad-slot="8486290217" data-ad-format="rectangle" data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div><h3>{{ video.title }}</h3>
-<video id="videoPlayer" width="100%" controls>
-    <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+<body onload="startTimer()">
+  <div class="container py-4">
+    <h2 class="text-center mb-4">🎬 {{ video.title }}</h2><div class="text-center">
+  <video width="100%" height="auto" controls autoplay>
+    <source src="/static/uploads/{{ video.filename }}" type="video/mp4">
     Your browser does not support the video tag.
-</video>
-<div class="countdown" id="countdown">⏳ Watch for 30 seconds to earn reward</div>
-<div class="reward" id="rewardInfo"></div>
+  </video>
+</div>
 
-</div><!-- ✅ Popup Ad Before Watching --><div id="popupAd">
-    <div class="popup-content">
-        <h3>Sponsored Ad</h3>
-        <p>Starting video in <span class="popup-count" id="popupTimer">3</span> seconds...</p>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
-        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6332657251575161" data-ad-slot="8486290217" data-ad-format="auto" data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-</div><!-- ✅ Popup Ad Before Reward --><div id="popupReward">
-    <div class="popup-content">
-        <h3>Unlocking Reward</h3>
-        <p>Almost done... <span class="popup-count" id="popupRewardTimer">3</span> seconds left</p>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
-        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6332657251575161" data-ad-slot="8486290217" data-ad-format="auto" data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-</div><!-- ✅ Bottom Ad --><div class="ad-bottom">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6332657251575161" data-ad-slot="8486290217" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div><script>
-    const video = document.getElementById('videoPlayer');
-    const countdownEl = document.getElementById('countdown');
-    const rewardEl = document.getElementById('rewardInfo');
-    const popupAd = document.getElementById('popupAd');
-    const popupReward = document.getElementById('popupReward');
-    const popupTimerEl = document.getElementById('popupTimer');
-    const popupRewardTimerEl = document.getElementById('popupRewardTimer');
+<div class="text-center mt-4">
+  <p>⏱️ Watch time: <span id="timer">0s</span></p>
 
-    let secondsWatched = 0;
-    let rewardGiven = false;
-    let interval;
-    let popupShown = false;
+  <form id="rewardForm" action="/reward/{{ video.id }}" method="POST" style="display: none">
+    <button class="btn btn-success">Claim ${{ video.reward }} Reward</button>
+  </form>
+</div>
 
-    video.addEventListener('play', () => {
-        if (!popupShown) {
-            showPopupAd();
-            popupShown = true;
-        }
-
-        if (!interval && !rewardGiven) {
-            interval = setInterval(() => {
-                if (!video.paused && !video.ended) {
-                    secondsWatched++;
-                    countdownEl.textContent = `⏳ ${30 - secondsWatched} seconds remaining to earn reward`;
-
-                    if (secondsWatched >= 30 && !rewardGiven) {
-                        clearInterval(interval);
-                        rewardGiven = true;
-                        showPopupReward();
-                    }
-                }
-            }, 1000);
-        }
-    });
-
-    function showPopupAd() {
-        popupAd.style.display = 'flex';
-        let popupSeconds = 3;
-        const popupInterval = setInterval(() => {
-            popupSeconds--;
-            popupTimerEl.textContent = popupSeconds;
-            if (popupSeconds <= 0) {
-                clearInterval(popupInterval);
-                popupAd.style.display = 'none';
-            }
-        }, 1000);
-    }
-
-    function showPopupReward() {
-        popupReward.style.display = 'flex';
-        let rewardSeconds = 3;
-        const rewardInterval = setInterval(() => {
-            rewardSeconds--;
-            popupRewardTimerEl.textContent = rewardSeconds;
-            if (rewardSeconds <= 0) {
-                clearInterval(rewardInterval);
-                popupReward.style.display = 'none';
-                giveReward();
-            }
-        }, 1000);
-    }
-
-    function giveReward() {
-        fetch("{{ url_for('reward', video_id=video.id) }}", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                countdownEl.style.display = 'none';
-                rewardEl.innerText = "✅ Reward earned! Total: $" + data.earnings.toFixed(4);
-            });
-    }
-</script></body>
+  </div>
+</body>
 </html>
