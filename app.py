@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, send_file
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
@@ -22,13 +22,19 @@ def load_data():
                 "users": {
                     "admin": {
                         "password": generate_password_hash("admin123"),
-                        "email": "admin@example.com"
+                        "email": "admin@example.com",
+                        "joined": str(datetime.datetime.now()),
+                        "earnings": 0,
+                        "watched": [],
+                        "withdrawals": []
                     },
                     "bensonmwangi834@gmail.com": {
                         "password": generate_password_hash("mypassword"),
                         "email": "bensonmwangi834@gmail.com",
                         "joined": str(datetime.datetime.now()),
-                        "earnings": 0
+                        "earnings": 0,
+                        "watched": [],
+                        "withdrawals": []
                     }
                 },
                 "visitors": 0,
@@ -37,7 +43,16 @@ def load_data():
                 "daily_logins": {},
                 "min_withdraw_amount": 150.0,
                 "daily_login_reward": 0.5,
-                "watch_reward_amount": 0.01
+                "watch_reward_amount": 0.01,
+                "reward_rules": [
+                    "Time-based earnings start after 30 seconds of watching.",
+                    "Daily login rewards are earned after 60 seconds online.",
+                    "Reward Rules are shown in three places and are editable by Ben."
+                ],
+                "settings": {
+                    "enable_rewards": True,
+                    "maintenance_mode": False
+                }
             }, f)
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
@@ -46,21 +61,15 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-# ... (rest of helper functions: load_rules, save_rules, calculate_profit, etc.)
-
-# --- Load Data ---
+# --- Load App Data ---
 data = load_data()
-videos = data.get('videos', [])
-users = data.get('users', {})
+users = data['users']
+videos = data['videos']
 visitor_count = data.get('visitors', 0)
 withdrawals = data.get('withdrawals', [])
-youtuber_requests = data.get('youtuber_requests', [])
-daily_logins = data.get("daily_logins", {})
-settings = {
-    'min_withdraw_amount': data.get('min_withdraw_amount', 150.0),
-    'daily_login_reward': data.get('daily_login_reward', 0.5),
-    'watch_reward_amount': data.get('watch_reward_amount', 0.01)
-}
+daily_logins = data.get('daily_logins', {})
+reward_rules = data.get("reward_rules", [])
+settings = data.get("settings", {})
 
 # --- Routes ---
 
@@ -74,18 +83,21 @@ def index():
         return redirect(url_for('rules_popup'))
     return render_template('index.html', videos=videos, visitors=visitor_count)
 
+@app.route('/rules-popup')
+def rules_popup():
+    return render_template('rules_popup.html', rules=reward_rules)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user_input = request.form['username']
         password = request.form['password']
 
-        # Try to find user by username or email
+        # Try to find user by username, email, or phone
         user = users.get(user_input)
         if not user:
-            # Check by email
             for uname, u in users.items():
-                if u.get("email") == user_input:
+                if u.get("email") == user_input or u.get("phone") == user_input:
                     user = u
                     user_input = uname
                     break
@@ -96,6 +108,17 @@ def login():
             return redirect(url_for('index'))
         flash("Invalid login details.")
     return render_template('login.html')
+
+@app.route('/forgot-password')
+def forgot_password():
+    flash("Password reset feature coming soon.")
+    return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("Logged out successfully.")
+    return redirect(url_for('login'))
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -109,9 +132,15 @@ def admin_login():
         flash("Wrong credentials")
     return render_template('admin-login.html')
 
-# ... [Rest of your routes stay unchanged: logout, dashboard, upload, withdraw, rules, etc.]
+@app.route('/dashboard')
+def dashboard():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+    return render_template('admin-dashboard.html', videos=videos, users=users, withdrawals=withdrawals)
 
-# --- Run ---
+# Add other necessary routes like: /upload, /withdraw, /admin/review, etc.
+
+# --- Run App ---
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)
