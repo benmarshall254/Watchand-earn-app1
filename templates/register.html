@@ -13,8 +13,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
+      padding: 20px;
     }
 
     .register-container {
@@ -25,6 +26,11 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
+    }
+
+    .register-container h2 {
+      margin-bottom: 20px;
+      color: #185a9d;
     }
 
     input[type="email"], input[type="password"] {
@@ -50,6 +56,15 @@
 
     button:hover {
       background: #2e9d8a;
+    }
+
+    .google-btn {
+      margin-top: 15px;
+      background: #db4437;
+    }
+
+    .google-btn:hover {
+      background: #c1351d;
     }
 
     .message {
@@ -79,7 +94,9 @@
 
     <input type="email" id="email" placeholder="Email address" required>
     <input type="password" id="password" placeholder="Create password (min 6 chars)" required>
-    <button onclick="registerUser()">Register</button>
+    <button onclick="registerUser()">Register with Email</button>
+
+    <button class="google-btn" onclick="registerWithGoogle()">Continue with Google</button>
 
     <div id="feedback" class="message"></div>
 
@@ -87,6 +104,7 @@
   </div>
 
   <script>
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
       authDomain: "watchtoearnapp2.firebaseapp.com",
@@ -98,6 +116,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
+    // Email registration
     function registerUser() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -110,13 +129,29 @@
       }
 
       auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          feedback.innerHTML = "✅ Registration successful! You can now log in.";
+        .then(() => {
+          feedback.innerHTML = "✅ Registration successful! Redirecting...";
           feedback.className = "message success";
+          setTimeout(() => window.location.href = "index.html", 2000);
         })
         .catch((error) => {
           feedback.innerHTML = "⚠️ " + error.message;
           feedback.className = "message error";
+        });
+    }
+
+    // Google sign-in
+    function registerWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          document.getElementById("feedback").innerHTML = "✅ Google login successful! Redirecting...";
+          document.getElementById("feedback").className = "message success";
+          setTimeout(() => window.location.href = "index.html", 2000);
+        })
+        .catch((error) => {
+          document.getElementById("feedback").innerHTML = "⚠️ " + error.message;
+          document.getElementById("feedback").className = "message error";
         });
     }
   </script>
