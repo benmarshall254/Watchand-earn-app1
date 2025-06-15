@@ -1,3 +1,4 @@
+/* GLOBAL STYLES */
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(120deg, #f6f9fc, #e0f7fa);
@@ -20,12 +21,14 @@ header h1 {
   letter-spacing: 1px;
 }
 
+/* MAIN CONTENT */
 main {
   padding: 20px;
   max-width: 1000px;
   margin: auto;
 }
 
+/* VIDEO DISPLAY */
 .video-card {
   background: #fff;
   margin-bottom: 25px;
@@ -52,7 +55,10 @@ video {
   margin-bottom: 10px;
 }
 
-a.button {
+/* BUTTONS & LINKS */
+a.button,
+button,
+input[type="submit"] {
   display: inline-block;
   padding: 10px 16px;
   background: #00c6ff;
@@ -61,31 +67,135 @@ a.button {
   border-radius: 6px;
   font-weight: bold;
   transition: background 0.3s ease;
-}
-
-a.button:hover {
-  background: #0072ff;
-}
-
-button, input[type="submit"] {
-  background: #00c6ff;
-  color: #fff;
   border: none;
-  padding: 10px 16px;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.3s ease;
 }
 
-button:hover, input[type="submit"]:hover {
+a.button:hover,
+button:hover,
+input[type="submit"]:hover {
   background: #0072ff;
 }
 
-form input[type="text"], form input[type="url"], form input[type="file"] {
+/* FORMS */
+form input[type="text"],
+form input[type="url"],
+form input[type="email"],
+form input[type="number"],
+form input[type="file"],
+form select,
+form textarea {
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  width: calc(100% - 22px);
+  width: 100%;
   box-sizing: border-box;
+  font-size: 1em;
+}
+
+/* SIDEBAR ADMIN PANEL */
+.sidebar {
+  background: #1e1e2f;
+  color: white;
+  padding: 20px;
+  min-height: 100vh;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
+.sidebar h2 {
+  font-size: 1.5em;
+  color: #00ffd0;
+  margin-bottom: 20px;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px 15px;
+  color: #ccc;
+  margin-bottom: 10px;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background-color: #2e2e40;
+  color: #fff;
+  border-left: 3px solid #00ffd0;
+}
+
+/* ADMIN PANEL LAYOUT */
+.admin-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* CARDS AND PANELS */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+.card h2 {
+  margin-top: 0;
+  color: #0072ff;
+}
+
+.flex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.flex-grid .card {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* WITHDRAW / CAMPAIGN CARDS */
+.withdraw-card, .campaign-card {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-left: 4px solid #00c6ff;
+  background: #fdfdfd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.withdraw-card p, .campaign-card p {
+  margin: 5px 0;
+}
+
+/* SEARCH BOX */
+#searchBox {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 25px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* CHART CANVAS */
+canvas {
+  max-width: 100%;
+  border-radius: 6px;
 }
