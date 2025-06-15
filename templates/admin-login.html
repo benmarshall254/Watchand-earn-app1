@@ -2,51 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login - Watch & Earn</title>
   <style>
     body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
     }
 
     .login-box {
-      background: white;
-      padding: 30px 25px;
+      background: #ffffff;
+      padding: 35px 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.25);
       width: 100%;
       max-width: 400px;
+      box-sizing: border-box;
       text-align: center;
     }
 
     h2 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #333;
+      font-size: 1.6em;
     }
 
-    input[type="text"], input[type="password"] {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-bottom: 15px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
       font-size: 15px;
+      box-sizing: border-box;
     }
 
     button {
       background: #667eea;
       color: white;
       border: none;
-      padding: 10px 15px;
+      padding: 12px 15px;
       width: 100%;
       font-size: 16px;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
     }
 
     button:hover {
@@ -54,17 +62,18 @@
     }
 
     .error {
-      background: #ffdddd;
-      color: #d8000c;
+      background-color: #ffe5e5;
+      color: #b30000;
       padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-weight: bold;
     }
 
     a {
       display: block;
-      margin-top: 10px;
-      color: #667eea;
+      margin-top: 15px;
+      color: #4a00e0;
       text-decoration: none;
       font-size: 14px;
     }
@@ -84,7 +93,7 @@
       {% endif %}
     {% endwith %}
 
-    <form method="post" action="{{ url_for('admin_login') }}">
+    <form method="POST" action="{{ url_for('admin_login') }}">
       <input type="text" name="username" placeholder="Username" required autocomplete="username">
       <input type="password" name="password" placeholder="Password" required autocomplete="current-password">
       <button type="submit">Login</button>
