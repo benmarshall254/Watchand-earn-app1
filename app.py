@@ -15,6 +15,9 @@ DATA_FILE = 'data.json'
 # --- Helper Functions ---
 
 def load_data():
+    if not os.path.exists(DATA_FILE):
+        with open(DATA_FILE, 'w') as f:
+            json.dump({"videos": [], "users": {"admin": {"password": generate_password_hash("admin123")}}, "visitors": 0, "withdrawals": []}, f)
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
 
@@ -35,14 +38,14 @@ def save_rules(new_rules):
 
 def calculate_profit():
     ad_revenue = data.get("ad_clicks", 0) * 0.01
-    total_earnings_paid = sum([u["earnings"] for u in users.values() if u])
+    total_earnings_paid = sum([u.get("earnings", 0) for u in users.values()])
     return ad_revenue - total_earnings_paid
 
 def get_user_growth_data():
     growth = {}
     for u in users.values():
-        if 'joined' in u:
-            date = u['joined'][:10]
+        date = u.get('joined', '')[:10]
+        if date:
             growth[date] = growth.get(date, 0) + 1
     dates = sorted(growth)
     counts = [growth[d] for d in dates]
@@ -51,7 +54,7 @@ def get_user_growth_data():
 def get_withdrawal_stats():
     date_totals = {}
     for w in withdrawals:
-        if 'date' in w and w['status'] == 'approved':
+        if 'date' in w and w.get('status') == 'approved':
             d = w['date'][:10]
             date_totals[d] = date_totals.get(d, 0) + float(w['amount'])
     dates = sorted(date_totals)
@@ -60,10 +63,10 @@ def get_withdrawal_stats():
 
 # --- Load Data ---
 data = load_data()
-videos = data['videos']
-users = data['users']
-visitor_count = data['visitors']
-withdrawals = data['withdrawals']
+videos = data.get('videos', [])
+users = data.get('users', {})
+visitor_count = data.get('visitors', 0)
+withdrawals = data.get('withdrawals', [])
 youtuber_requests = data.get('youtuber_requests', [])
 daily_logins = data.get("daily_logins", {})
 settings = {
@@ -102,7 +105,8 @@ def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == 'admin' and (password == users['admin']['password'] or check_password_hash(users['admin']['password'], password)):
+        admin_user = users.get('admin', {})
+        if username == 'admin' and (password == admin_user.get('password') or check_password_hash(admin_user.get('password', ''), password)):
             session['admin'] = True
             return redirect(url_for('dashboard'))
         flash("Wrong credentials")
