@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Submit Video Request - Watch & Earn</title>
+  <meta charset="utf-8">
+</head>
+<body>
+  <h2>🎥 Promote Your Video</h2>
+  <p>Fill the form below to request views on your YouTube video:</p>
 
+  <form method="POST" action="{{ url_for('submit_video') }}">
+    <label>Video Title:</label><br>
+    <input type="text" name="title" required><br><br>
+
+    <label>YouTube Link:</label><br>
+    <input type="url" name="link" required><br><br>
+
+    <label>Your Email:</label><br>
+    <input type="email" name="email" required><br><br>
+
+    <label>Target Views:</label><br>
+    <input type="number" name="views" required><br><br>
+
+    <button type="submit">Submit Request</button>
+  </form>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li style="color: green;">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <a href="{{ url_for('index') }}">⬅ Back to Home</a>
+</body>
+</html>
