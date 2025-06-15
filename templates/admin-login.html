@@ -72,7 +72,7 @@
 
     a {
       display: block;
-      margin-top: 15px;
+      margin-top: 12px;
       color: #4a00e0;
       text-decoration: none;
       font-size: 14px;
@@ -80,6 +80,10 @@
 
     a:hover {
       text-decoration: underline;
+    }
+
+    .alt-login {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -99,7 +103,12 @@
       <button type="submit">Login</button>
     </form>
 
-    <a href="/">← Back to Home</a>
+    <a href="{{ url_for('index') }}">← Back to Home</a>
+    <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+
+    <div class="alt-login">
+      <a href="{{ url_for('choose_login') }}"><button type="button">Choose Method of Login</button></a>
+    </div>
   </div>
 </body>
 </html>
