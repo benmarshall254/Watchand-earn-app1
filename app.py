@@ -137,7 +137,7 @@ def dashboard():
     user_growth_dates, user_growth_counts = get_user_growth_data()
     withdrawal_dates, withdrawal_amounts = get_withdrawal_stats()
 
-    return render_template('admin-dashboard.html',
+    return render_template('dashboard.html',
         videos=videos,
         settings=settings,
         withdrawals=withdrawals,
