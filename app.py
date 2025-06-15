@@ -1,18 +1,19 @@
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, make_response
 from werkzeug.utils import secure_filename
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 import datetime
 
 app = Flask(__name__)
-app.secret_key = 'admin123'
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersecretkey123")  # Change this in production!
 
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = 'data.json'
 
-# --- Helper Functions ---
+# -------------------- Data Management --------------------
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w') as f:
@@ -52,28 +53,44 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-# --- Load App Data ---
 data = load_data()
 users = data['users']
 videos = data['videos']
-visitor_count = data.get('visitors', 0)
 withdrawals = data.get('withdrawals', [])
 daily_logins = data.get('daily_logins', {})
 reward_rules = data.get("reward_rules", [])
 settings = data.get("settings", {})
+visitor_count = data.get('visitors', 0)
 
-# --- Routes ---
+# -------------------- Middleware --------------------
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://www.gstatic.com https://www.googleapis.com https://www.gstatic.com/firebasejs; style-src 'self' 'unsafe-inline';"
+    return response
+
+# -------------------- Routes --------------------
 
 @app.route('/')
 def index():
+    if 'firebase_user' not in session:
+        flash("You must log in to access this page.")
+        return redirect(url_for('login'))
+
+    # Update and hide visitor count
     global visitor_count
     visitor_count += 1
     data['visitors'] = visitor_count
     save_data(data)
-    return render_template('index.html', videos=videos, visitors=visitor_count)
+
+    return render_template('index.html', videos=videos)
 
 @app.route('/rules-popup')
 def rules_popup():
+    if 'firebase_user' not in session:
+        return redirect(url_for('login'))
     return render_template('rules_popup.html', rules=reward_rules)
 
 @app.route('/login')
@@ -84,35 +101,47 @@ def login():
 def register():
     return render_template('register.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash("Logged out successfully.")
-    return redirect(url_for('login'))
-
 @app.route('/forgot-password')
 def forgot_password():
     return render_template('forgot-password.html')
 
+@app.route('/session-login', methods=['POST'])
+def session_login():
+    email = request.form.get('email')
+    if email:
+        session['firebase_user'] = email
+        return jsonify({'message': 'Session started'}), 200
+    return jsonify({'error': 'Email is required'}), 400
+
+@app.route('/logout')
+def logout():
+    session.pop('firebase_user', None)
+    session.pop('admin', None)
+    flash("Logged out successfully.")
+    return redirect(url_for('login'))
+
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        admin_user = users.get('admin', {})
-        if username == 'admin' and (password == admin_user.get('password') or check_password_hash(admin_user.get('password', ''), password)):
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        admin = users.get("admin")
+        if username == "admin" and check_password_hash(admin["password"], password):
             session['admin'] = True
             return redirect(url_for('dashboard'))
-        flash("Wrong credentials")
-    return render_template('admin-login.html')
+        flash("Incorrect admin credentials.")
+    return render_template("admin-login.html")
 
 @app.route('/dashboard')
 def dashboard():
     if not session.get('admin'):
+        flash("Unauthorized access.")
         return redirect(url_for('admin_login'))
-    return render_template('admin-dashboard.html', videos=videos, users=users, withdrawals=withdrawals)
+    return render_template('dashboard.html', videos=videos, users=users, withdrawals=withdrawals, visitors=visitor_count)
 
-# --- Run App ---
+# -------------------- Run --------------------
+
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.run(debug=True)
+    app.run(debug=False)  # Debug OFF in production
