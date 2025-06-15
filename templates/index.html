@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Watch & Earn</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -9,24 +10,33 @@
 <body>
   <header>
     <h1>🎥 Watch & Earn</h1>
-    {% if session.user %}
-      <p>Welcome, {{ session.user }} | <a href="{{ url_for('profile') }}">Profile</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
-    {% elif session.admin %}
-      <p>Welcome, Admin | <a href="{{ url_for('dashboard') }}">Dashboard</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
+    {% if session.get('user') %}
+      <p>Welcome, {{ session.user }} |
+        <a href="{{ url_for('profile') }}">Profile</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </p>
+    {% elif session.get('admin') %}
+      <p>Welcome, Admin |
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </p>
     {% else %}
-      <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('admin_login') }}">Admin</a>
+      <p>
+        <a href="{{ url_for('login') }}">User Login</a> |
+        <a href="{{ url_for('admin_login') }}">Admin</a>
+      </p>
     {% endif %}
   </header>
 
   <main>
     <section>
-      <h2>Reward Rules 📋</h2>
-      <a href="{{ url_for('rules_popup') }}">View Reward Rules</a>
+      <h2>📋 Reward Rules</h2>
+      <a href="{{ url_for('rules_popup') }}">👉 View Reward Rules</a>
     </section>
 
     <section>
       <h2>📊 Visitor Count</h2>
-      <p>Total Visitors: {{ visitors }}</p>
+      <p>Total Visitors: <strong>{{ visitors }}</strong></p>
     </section>
 
     <section>
@@ -34,23 +44,24 @@
       {% if videos %}
         <ul>
           {% for video in videos %}
-            <li>
+            <li style="margin-bottom: 20px;">
               <strong>{{ video.title }}</strong><br>
               <video width="300" controls>
-                <source src="{{ url_for('static', filename='uploads/' ~ video.filename) }}" type="video/mp4">
+                <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+                Your browser does not support the video tag.
               </video>
-              <p>Reward: ${{ video.reward }}</p>
+              <p>Reward: <strong>${{ video.reward }}</strong></p>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p>No videos yet.</p>
+        <p>No videos available at the moment. Please check back later.</p>
       {% endif %}
     </section>
   </main>
 
   <footer>
-    <p>&copy; 2025 Watch & Earn</p>
+    <p>&copy; 2025 Watch & Earn. All rights reserved.</p>
   </footer>
 </body>
 </html>
