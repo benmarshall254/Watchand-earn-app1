@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Register - Watch & Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
   <style>
@@ -53,12 +54,22 @@
 
     .message {
       margin-top: 15px;
+      font-weight: 500;
+    }
+
+    .message.success {
       color: green;
     }
 
-    .error {
-      margin-top: 15px;
+    .message.error {
       color: red;
+    }
+
+    .login-link {
+      display: block;
+      margin-top: 20px;
+      color: #185a9d;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -67,35 +78,47 @@
     <h2>📝 Create Your Account</h2>
 
     <input type="email" id="email" placeholder="Email address" required>
-    <input type="password" id="password" placeholder="Create password" required>
+    <input type="password" id="password" placeholder="Create password (min 6 chars)" required>
     <button onclick="registerUser()">Register</button>
 
     <div id="feedback" class="message"></div>
 
-    <script>
-      // Firebase config
-      const firebaseConfig = {
-        apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
-      };
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-
-      function registerUser() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const feedback = document.getElementById("feedback");
-
-        auth.createUserWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-            feedback.innerHTML = "✅ Registration successful. Please log in.";
-            feedback.style.color = "green";
-          })
-          .catch((error) => {
-            feedback.innerHTML = "⚠️ " + error.message;
-            feedback.style.color = "red";
-          });
-      }
-    </script>
+    <a href="login.html" class="login-link">Already have an account? Log in</a>
   </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
+      authDomain: "watchtoearnapp2.firebaseapp.com",
+      projectId: "watchtoearnapp2",
+      storageBucket: "watchtoearnapp2.appspot.com",
+      messagingSenderId: "407239593027",
+      appId: "1:407239593027:web:39a72163f10fab75bd58f6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function registerUser() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const feedback = document.getElementById("feedback");
+
+      if (password.length < 6) {
+        feedback.innerHTML = "⚠️ Password must be at least 6 characters.";
+        feedback.className = "message error";
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          feedback.innerHTML = "✅ Registration successful! You can now log in.";
+          feedback.className = "message success";
+        })
+        .catch((error) => {
+          feedback.innerHTML = "⚠️ " + error.message;
+          feedback.className = "message error";
+        });
+    }
+  </script>
 </body>
 </html>
