@@ -56,7 +56,6 @@
       object-fit: cover;
       border-radius: 10px;
       margin-bottom: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .video-card h3 {
       margin: 10px 0 5px;
@@ -141,12 +140,11 @@
     Your earnings: $<span id="userEarnings">{{ earnings }}</span>
   </div>
 
-  <!-- Reward countdown timer -->
   <div id="rewardSection" class="reward-timer" style="display:none;">
     Daily reward countdown: <span id="rewardCountdown">60</span> seconds
   </div>
 
-  <!-- AdSense Mid Page -->
+  <!-- Mid-page Ad -->
   <div style="text-align:center; margin: 20px auto;">
     <ins class="adsbygoogle"
          style="display:block"
@@ -160,14 +158,14 @@
   <div class="grid">
     {% for video in videos %}
     <div class="video-card">
-      <img src="{{ video.thumbnail or url_for('static', filename='default_thumb.jpg') }}" alt="Video thumbnail" />
+      <img src="{{ video.thumbnail or url_for('static', filename='default_thumb.jpg') }}" alt="Thumbnail" />
       <h3>{{ video.title }}</h3>
       <button onclick="watchVideo({{ video.id }})">▶ Watch & Earn</button>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Bottom Banner Ad -->
+  <!-- Bottom Ad -->
   <div style="text-align:center; background:#fff; margin-top: 30px;">
     <ins class="adsbygoogle"
          style="display:block"
@@ -178,9 +176,9 @@
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
-  <!-- Interstitial Popup Ad -->
+  <!-- Interstitial Ad Popup -->
   <div id="popupAd">
-    <p><strong>Ad loading... please wait</strong></p>
+    <p><strong>Ad loading... Please wait</strong></p>
     <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-6332657251575161"
@@ -223,16 +221,17 @@
               alert('🎉 Daily reward earned: $' + data.reward);
               document.getElementById('userEarnings').textContent = parseFloat(data.total).toFixed(2);
               document.getElementById("rewardSection").style.display = "none";
+              document.getElementById('popupAd').style.display = 'none';
             })
             .catch(() => {
-              alert('Failed to claim daily reward.');
+              alert('⚠️ Failed to claim daily reward.');
             });
           clearInterval(interval);
         }
       }, 1000);
 
       window.onbeforeunload = () => {
-        if (!rewardGiven) alert('You left before completing the reward session!');
+        if (!rewardGiven) alert('⛔ You left before completing the 60-second reward session!');
       };
     }
 
