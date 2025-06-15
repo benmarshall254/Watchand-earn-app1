@@ -1,159 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login - Watch & Earn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .login-container {
-            background: white;
-            padding: 30px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        label {
-            display: block;
-            text-align: left;
-            margin: 10px 0 5px;
-            color: #555;
-        }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 15px;
-        }
-
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            width: 100%;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #5a67d8;
-        }
-
-        .error {
-            background: #ffdddd;
-            color: #d8000c;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        .google-btn {
-            background: white;
-            color: #444;
-            border: 1px solid #ccc;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .google-btn:hover {
-            background: #f5f5f5;
-        }
-
-        a {
-            display: block;
-            margin-top: 10px;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .bottom-links {
-            margin-top: 20px;
-        }
-    </style>
-
-    <!-- Firebase JS (optional) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
-            authDomain: "your-app.firebaseapp.com",
-            projectId: "your-app",
-            storageBucket: "your-app.appspot.com",
-            messagingSenderId: "your-sender-id",
-            appId: "your-app-id"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    const email = result.user.email;
-                    window.location.href = "/firebase-login?email=" + encodeURIComponent(email);
-                })
-                .catch((error) => {
-                    alert("Google sign-in failed: " + error.message);
-                });
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Watch & Earn</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="login-container">
-        <h2>🔐 Login to Watch & Earn</h2>
+  <div class="container py-4">
+    <h2 class="text-center mb-4">📝 Login to Watch & Earn</h2>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="error">{{ messages[0] }}</div>
-            {% endif %}
-        {% endwith %}
+    <form method="POST">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" name="username" required>
+      </div>
 
-        <form method="post" action="{{ url_for('login') }}">
-            <label for="username">Username or Email</label>
-            <input type="text" name="username" placeholder="Enter username" required autocomplete="username">
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" required>
+      </div>
 
-            <label for="password">Password</label>
-            <input type="password" name="password" placeholder="Enter password" required autocomplete="current-password">
+      <button type="submit" class="btn btn-primary">Login</button>
+      <a href="/forgot-password" class="btn btn-link">Forgot Password?</a>
+    </form>
 
-            <button type="submit">Login</button>
-        </form>
-
-        <button class="google-btn" onclick="signInWithGoogle()">Sign in with Google</button>
-
-        <div class="bottom-links">
-            <a href="/register">Don’t have an account? Register</a>
-            <a href="/reset">Forgot password?</a>
-            <a href="/">← Back to Home</a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-warning mt-3">
+          {{ messages[0] }}
         </div>
-    </div>
+      {% endif %}
+    {% endwith %}
+  </div>
 </body>
 </html>
