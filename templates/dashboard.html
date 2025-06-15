@@ -1,163 +1,132 @@
-<!DOCTYPE html><html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard - Watch & Earn</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <header>
-        <h1>🎛️ Admin Dashboard - Watch & Earn</h1>
-        <nav>
-            <a href="{{ url_for('index') }}">🏠 Home</a>
-            <a href="{{ url_for('logout') }}">🚪 Logout</a>
-            <a href="{{ url_for('edit_rules') }}">📜 Edit Rules</a>
-            <a href="{{ url_for('change_password') }}">🔒 Change Password</a>
-            <a href="{{ url_for('download_reports') }}">📥 Download Reports</a>
-        </nav>
-    </header><section class="stats">
-    <h2>📊 Platform Stats</h2>
-    <ul>
-        <li>Total Visitors: {{ visitors }}</li>
-        <li>Total Users: {{ users|length }}</li>
-        <li>Pending Withdrawals: {{ withdrawals|selectattr('status', 'equalto', 'pending')|list|length }}</li>
-        <li>Total Paid Out: ${{ total_paid }}</li>
-        <li>Total Revenue: ${{ total_revenue }}</li>
-        <li>Profit: ${{ profit }}</li>
-    </ul>
-</section>
+from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify, send_file from werkzeug.utils import secure_filename from werkzeug.security import check_password_hash, generate_password_hash import os import json import datetime
 
-<section>
-    <canvas id="growthChart" width="400" height="150"></canvas>
-    <script>
-        const ctx = document.getElementById('growthChart').getContext('2d');
-        const growthChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{ user_growth_dates }},
-                datasets: [{
-                    label: 'User Growth',
-                    data: {{ user_growth_counts }},
-                    borderColor: 'blue',
-                    fill: false
-                }, {
-                    label: 'Withdrawals',
-                    data: {{ withdrawal_amounts }},
-                    borderColor: 'red',
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
-</section>
+app = Flask(name) app.secret_key = 'admin123'
 
-<section class="settings">
-    <h2>⚙️ Reward Settings</h2>
-    <form method="POST">
-        <label>Minimum Withdraw ($):</label>
-        <input type="number" name="min_withdraw_amount" step="0.01" value="{{ settings.min_withdraw_amount }}">
+UPLOAD_FOLDER = 'static/uploads' app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER DATA_FILE = 'data.json'
 
-        <label>Daily Login Reward ($):</label>
-        <input type="number" name="daily_login_reward" step="0.001" value="{{ settings.daily_login_reward }}">
+--- Helper Functions ---
 
-        <label>Watch Reward per Minute ($):</label>
-        <input type="number" name="watch_reward_amount" step="0.001" value="{{ settings.watch_reward_amount }}">
+def load_data(): with open(DATA_FILE, 'r') as f: return json.load(f)
 
-        <button type="submit">💾 Save Settings</button>
-    </form>
-</section>
+def save_data(data): with open(DATA_FILE, 'w') as f: json.dump(data, f, indent=2)
 
-<section class="upload">
-    <h2>📤 Upload New MP4 Video</h2>
-    <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
-        <input type="text" name="title" placeholder="Video Title" required>
-        <input type="file" name="video" accept="video/mp4" required>
-        <button type="submit">Upload MP4</button>
-    </form>
-</section>
+def load_rules(): try: with open('rules.txt', 'r') as f: return f.read().splitlines() except FileNotFoundError: return ["No reward rules found."]
 
-<section class="upload">
-    <h2>🔗 Add YouTube Video Link</h2>
-    <form method="POST" action="{{ url_for('submit_video') }}">
-        <input type="text" name="title" placeholder="Video Title" required>
-        <input type="text" name="link" placeholder="YouTube Link" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="number" name="views" placeholder="Target Views" required>
-        <button type="submit">Add Campaign</button>
-    </form>
-</section>
+def save_rules(new_rules): with open('rules.txt', 'w') as f: f.write('\n'.join(new_rules))
 
-<section class="users">
-    <h2>👥 User Earnings</h2>
-    <input type="text" id="searchBox" placeholder="Search user...">
-    <ul id="userList">
-        {% for name, u in users|dictsort(false, attribute='1.earnings')|reverse %}
-            {% if name != 'admin' %}
-                <li><strong>{{ name }}</strong>: ${{ '%.4f' % u.earnings }} - {{ 'Inactive' if u.inactive else 'Active' }}</li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-</section>
+def calculate_profit(): ad_revenue = data.get("ad_clicks", 0) * 0.01 total_earnings_paid = sum([u["earnings"] for u in users.values()]) return ad_revenue - total_earnings_paid
 
-<section class="withdrawals">
-    <h2>💰 Withdrawal Requests</h2>
-    {% for i, w in enumerate(withdrawals) %}
-        <div class="withdraw-card">
-            <p>User: <strong>{{ w.username }}</strong></p>
-            <p>Amount: ${{ w.amount }}</p>
-            <p>Status: {{ w.status }}</p>
-            {% if w.status == 'pending' %}
-                <form method="POST" action="{{ url_for('approve_withdraw', index=i) }}">
-                    <button type="submit">✅ Approve</button>
-                </form>
-                <form method="POST" action="{{ url_for('reject_withdraw', index=i) }}">
-                    <button type="submit">❌ Reject</button>
-                </form>
-            {% endif %}
-        </div>
-    {% else %}
-        <p>No withdrawal requests yet.</p>
-    {% endfor %}
-</section>
+--- Load Data ---
 
-<section class="campaigns">
-    <h2>📺 YouTube Campaigns</h2>
-    {% for campaign in youtuber_requests %}
-        <div class="campaign-card">
-            <p><strong>{{ campaign.title }}</strong></p>
-            <p>Link: <a href="{{ campaign.link }}" target="_blank">{{ campaign.link }}</a></p>
-            <p>Email: {{ campaign.email }}</p>
-            <p>Target Views: {{ campaign.views }}</p>
-            <p>Status: {{ campaign.status }}</p>
-        </div>
-    {% else %}
-        <p>No campaigns submitted yet.</p>
-    {% endfor %}
-</section>
+data = load_data() videos = data['videos'] users = data['users'] visitor_count = data['visitors'] withdrawals = data['withdrawals'] youtuber_requests = data.get('youtuber_requests', []) daily_logins = data.get("daily_logins", {}) settings = { 'min_withdraw_amount': data.get('min_withdraw_amount', 150.0), 'daily_login_reward': data.get('daily_login_reward', 0.5), 'watch_reward_amount': data.get('watch_reward_amount', 0.01) }
 
-<footer>
-    <p>&copy; {{ 2025 }} Watch & Earn. Admin Control Panel.</p>
-</footer>
+--- Routes ---
 
-<script>
-    const searchBox = document.getElementById('searchBox');
-    const userList = document.getElementById('userList');
+@app.route('/') def index(): global visitor_count visitor_count += 1 data['visitors'] = visitor_count save_data(data) if session.get('user') and session.pop('show_rules', False): return redirect(url_for('rules_popup')) return render_template('index.html', videos=videos, visitors=visitor_count)
 
-    searchBox.addEventListener('input', function () {
-        const search = this.value.toLowerCase();
-        const users = userList.querySelectorAll('li');
-        users.forEach(u => {
-            const name = u.textContent.toLowerCase();
-            u.style.display = name.includes(search) ? '' : 'none';
-        });
-    });
-</script>
+@app.route('/login', methods=['GET', 'POST']) def login(): if request.method == 'POST': username = request.form['username'] password = request.form['password'] user = users.get(username) if user and (password == user['password'] or check_password_hash(user['password'], password)): session['user'] = username session['show_rules'] = True return redirect(url_for('index')) flash("Invalid login details.") return render_template('login.html')
 
-</body>
-</html>
+@app.route('/admin-login', methods=['GET', 'POST']) def admin_login(): if request.method == 'POST': username = request.form['username'] password = request.form['password'] if username == 'admin' and ( password == users['admin']['password'] or check_password_hash(users['admin']['password'], password) ): session['admin'] = True return redirect(url_for('dashboard')) flash("Wrong credentials") return render_template('login.html')
+
+@app.route('/logout') def logout(): session.clear() flash("Logged out successfully.") return redirect(url_for('login'))
+
+@app.route('/dashboard', methods=['GET', 'POST']) def dashboard(): if not session.get('admin'): return redirect(url_for('admin_login'))
+
+if request.method == 'POST':
+    try:
+        settings['min_withdraw_amount'] = float(request.form['min_withdraw_amount'])
+        settings['daily_login_reward'] = float(request.form['daily_login_reward'])
+        settings['watch_reward_amount'] = float(request.form['watch_reward_amount'])
+        data['min_withdraw_amount'] = settings['min_withdraw_amount']
+        data['daily_login_reward'] = settings['daily_login_reward']
+        data['watch_reward_amount'] = settings['watch_reward_amount']
+        save_data(data)
+        flash("Settings updated successfully!")
+    except ValueError:
+        flash("Invalid input! Please enter valid numbers.")
+
+user_list = sorted(users.items(), key=lambda x: x[1].get("earnings", 0), reverse=True)
+profit = calculate_profit()
+return render_template('admin-dashboard.html', 
+    videos=videos, 
+    settings=settings,
+    withdrawals=withdrawals,
+    youtuber_requests=youtuber_requests,
+    visitors=visitor_count,
+    users=user_list,
+    profit=profit
+)
+
+@app.route('/upload', methods=['POST']) def upload(): if not session.get('admin'): return redirect(url_for('admin_login'))
+
+video = request.files.get('video')
+title = request.form.get('title', 'Untitled')
+
+if not video or video.filename == '':
+    flash("No video selected.")
+    return redirect(url_for('dashboard'))
+
+filename = secure_filename(video.filename)
+path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+video.save(path)
+
+video_id = str(len(videos) + 1)
+videos.append({
+    'id': video_id,
+    'title': title,
+    'filename': filename,
+    'thumbnail': '',
+    'reward': settings['watch_reward_amount']
+})
+save_data(data)
+
+flash(f"Video '{title}' uploaded successfully!")
+return redirect(url_for('dashboard'))
+
+@app.route('/withdraw/int:index/approve', methods=['POST']) def approve_withdraw(index): if session.get('admin'): withdrawals[index]['status'] = 'approved' save_data(data) flash("Withdrawal approved.") return redirect(url_for('dashboard'))
+
+@app.route('/withdraw/int:index/reject', methods=['POST']) def reject_withdraw(index): if session.get('admin'): withdrawals[index]['status'] = 'rejected' save_data(data) flash("Withdrawal rejected.") return redirect(url_for('dashboard'))
+
+@app.route('/withdrawal-count') def withdrawal_count(): return jsonify({'count': len(withdrawals)})
+
+@app.route('/admin/password', methods=['GET', 'POST']) def change_password(): if not session.get('admin'): return redirect(url_for('admin_login'))
+
+if request.method == 'POST':
+    current = request.form['current_password']
+    new = request.form['new_password']
+    stored = users['admin']['password']
+    if current == stored or check_password_hash(stored, current):
+        users['admin']['password'] = generate_password_hash(new)
+        save_data(data)
+        flash("Password changed successfully.")
+    else:
+        flash("Current password is incorrect.")
+    return redirect(url_for('change_password'))
+
+return render_template('password.html')
+
+@app.route('/rules-popup') def rules_popup(): rule_lines = load_rules() return render_template('rules_popup.html', rules=rule_lines)
+
+@app.route('/admin/rules', methods=['GET', 'POST']) def edit_rules(): if not session.get('admin'): return redirect(url_for('admin_login'))
+
+if request.method == 'POST':
+    new_rules = request.form.get('rules', '').strip().splitlines()
+    save_rules(new_rules)
+    flash("Rules updated successfully!")
+    return redirect(url_for('edit_rules'))
+
+current_rules = '\n'.join(load_rules())
+return render_template('edit_rules.html', rules=current_rules)
+
+@app.route('/profile') def profile(): if not session.get('user'): return redirect(url_for('login')) username = session['user'] user_data = users.get(username, {}) return render_template('profile.html', user=user_data)
+
+@app.route('/submit-video', methods=['GET', 'POST']) def submit_video(): if request.method == 'POST': youtuber_requests.append({ 'title': request.form.get('title'), 'link': request.form.get('link'), 'email': request.form.get('email'), 'views': request.form.get('views'), 'status': 'pending' }) data['youtuber_requests'] = youtuber_requests save_data(data) flash("Submission received! We will contact you.") return redirect(url_for('submit_video')) return render_template('submit_video.html')
+
+@app.route('/pay') def pay(): return render_template('pay.html')
+
+@app.route('/download-report') def download_report(): with open(DATA_FILE, 'rb') as f: return send_file(f, download_name="report.json", as_attachment=True)
+
+--- Run ---
+
+if name == 'main': os.makedirs(UPLOAD_FOLDER, exist_ok=True) app.run(debug=True)
+
