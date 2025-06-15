@@ -3,85 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <title>Watch & Earn</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6332657251575161" crossorigin="anonymous"></script>
+
+  <!-- ✅ Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+
+  <!-- Style -->
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 0;
-      background: #f5f6fa;
-      color: #2c3e50;
+      background: #f9f9f9;
+      color: #333;
     }
     header {
       background: #4a00e0;
       color: white;
-      padding: 15px;
-      text-align: center;
-      font-weight: 700;
+      padding: 20px;
       font-size: 1.8em;
+      text-align: center;
+      font-weight: bold;
     }
     .earnings {
+      padding: 15px;
       background: #fff;
-      padding: 15px 25px;
-      margin: 15px auto;
-      max-width: 900px;
-      border-radius: 10px;
-      text-align: right;
-      font-weight: bold;
-      font-size: 1.1em;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: 600;
     }
-    .grid {
+    .reward {
+      text-align: center;
+      background: #e0e0ff;
+      padding: 10px;
+      font-weight: bold;
+    }
+    .videos {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
       padding: 20px;
-      max-width: 1100px;
+      max-width: 1000px;
       margin: auto;
     }
     .video-card {
       background: #fff;
       padding: 15px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
     .video-card img {
       width: 100%;
-      height: 140px;
+      height: 120px;
       object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 10px;
+      border-radius: 8px;
     }
     .video-card h3 {
-      margin: 10px 0 5px;
-      font-size: 1.15em;
-      color: #333;
+      margin: 10px 0;
     }
     .video-card button {
+      padding: 10px 15px;
       background: #4a00e0;
       color: white;
-      padding: 10px;
       border: none;
       border-radius: 5px;
+      font-weight: bold;
       cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-      margin-top: auto;
     }
     .video-card button:hover {
       background: #3700b3;
-    }
-    .reward-timer {
-      text-align: center;
-      font-size: 1.2em;
-      margin: 15px 0 40px;
-      color: #555;
-      font-weight: 600;
     }
     #popupAd {
       display: none;
@@ -89,50 +82,26 @@
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      width: 90%;
-      max-width: 450px;
-      background: white;
-      padding: 25px 20px;
-      border: 2px solid #666;
-      z-index: 9999;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-      border-radius: 12px;
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #ccc;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      border-radius: 10px;
       text-align: center;
-    }
-    #popupAd p {
-      margin-bottom: 20px;
-      font-weight: 700;
-      font-size: 1.1em;
-      color: #4a00e0;
     }
     #popupAd button {
       background: #4a00e0;
-      color: white;
-      padding: 10px 25px;
+      color: #fff;
       border: none;
-      border-radius: 6px;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
       cursor: pointer;
-      font-weight: 700;
-      font-size: 1em;
-      transition: background-color 0.3s ease;
-    }
-    #popupAd button:hover {
-      background: #3700b3;
     }
   </style>
 </head>
 <body>
-
-  <!-- Top Banner Ad -->
-  <div style="text-align:center; background:#fff;">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-6332657251575161"
-         data-ad-slot="8486290217"
-         data-ad-format="horizontal"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
 
   <header>🎥 Watch & Earn</header>
 
@@ -140,71 +109,43 @@
     Your earnings: $<span id="userEarnings">{{ earnings }}</span>
   </div>
 
-  <div id="rewardSection" class="reward-timer" style="display:none;">
+  <div class="reward" id="rewardSection" style="display: none;">
     Daily reward countdown: <span id="rewardCountdown">60</span> seconds
   </div>
 
-  <!-- Mid-page Ad -->
-  <div style="text-align:center; margin: 20px auto;">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-6332657251575161"
-         data-ad-slot="5311769421"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
-
-  <div class="grid">
+  <div class="videos">
     {% for video in videos %}
     <div class="video-card">
-      <img src="{{ video.thumbnail or url_for('static', filename='default_thumb.jpg') }}" alt="Thumbnail" />
+      <img src="{{ video.thumbnail or url_for('static', filename='default_thumb.jpg') }}" alt="Thumbnail">
       <h3>{{ video.title }}</h3>
       <button onclick="watchVideo({{ video.id }})">▶ Watch & Earn</button>
     </div>
     {% endfor %}
   </div>
 
-  <!-- Bottom Ad -->
-  <div style="text-align:center; background:#fff; margin-top: 30px;">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-6332657251575161"
-         data-ad-slot="4425361886"
-         data-ad-format="horizontal"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
-
-  <!-- Interstitial Ad Popup -->
+  <!-- Ad Popup -->
   <div id="popupAd">
-    <p><strong>Ad loading... Please wait</strong></p>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-6332657251575161"
-         data-ad-slot="2038792312"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <p><strong>🎬 Ad loading... Please wait</strong></p>
     <button onclick="closeAdPopup()">Close Ad</button>
   </div>
 
+  <!-- Scripts -->
   <script>
     let loginTimer = 0;
     let rewardGiven = false;
 
     function checkRewardStatus() {
       fetch('/check-daily-reward')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
           if (!data.claimed) {
             document.getElementById("rewardSection").style.display = "block";
-            startLoginReward();
+            startCountdown();
           }
         });
     }
 
-    function startLoginReward() {
+    function startCountdown() {
       const interval = setInterval(() => {
         loginTimer++;
         document.getElementById('rewardCountdown').textContent = 60 - loginTimer;
@@ -223,15 +164,13 @@
               document.getElementById("rewardSection").style.display = "none";
               document.getElementById('popupAd').style.display = 'none';
             })
-            .catch(() => {
-              alert('⚠️ Failed to claim daily reward.');
-            });
+            .catch(() => alert('⚠️ Failed to claim reward.'));
           clearInterval(interval);
         }
       }, 1000);
 
       window.onbeforeunload = () => {
-        if (!rewardGiven) alert('⛔ You left before completing the 60-second reward session!');
+        if (!rewardGiven) alert('⚠️ You left before completing 60 seconds!');
       };
     }
 
