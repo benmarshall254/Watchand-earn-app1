@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Choose Login - Watch & Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f6f9fc, #e0f7fa);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-options {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .login-options h2 {
+      margin-bottom: 20px;
+      color: #0072ff;
+    }
+
+    .login-options button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background-color: #00c6ff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .login-options button:hover {
+      background-color: #0072ff;
+    }
+
+    .login-options .home-link {
+      margin-top: 15px;
+      display: inline-block;
+      text-decoration: none;
+      color: #0072ff;
+      font-weight: bold;
+    }
+
+    .login-options .home-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-options">
+    <h2>🔐 Choose Login Method</h2>
+    <button onclick="location.href='login.html'">📧 Login with Email</button>
+    <button onclick="location.href='login_with_phone.html'">📱 Login with Phone</button>
+    <a href="index.html" class="home-link">🏠 Back to Home</a>
+  </div>
+</body>
+</html>
