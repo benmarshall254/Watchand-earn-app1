@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phone Login - Watch & Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .phone-container {
+      background: #fff;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #0072ff;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005ecb;
+    }
+
+    #recaptcha-container {
+      margin-top: 15px;
+    }
+
+    .message {
+      margin-top: 15px;
+      color: green;
+    }
+
+    .error {
+      margin-top: 15px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <h2>📱 Phone Login</h2>
+
+    <input type="tel" id="phoneNumber" placeholder="+254712345678" required>
+    <div id="recaptcha-container"></div>
+    <button onclick="sendOTP()">Send OTP</button>
+
+    <input type="text" id="otp" placeholder="Enter OTP" style="display:none;">
+    <button onclick="verifyOTP()" id="verifyBtn" style="display:none;">Verify OTP</button>
+
+    <div id="status" class="message"></div>
+  </div>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyy6VpTtlKpAEf0nA6wRzpLpfeXRz9Qvk",
+      authDomain: "watchtoearnapp2.firebaseapp.com",
+      projectId: "watchtoearnapp2",
+      storageBucket: "watchtoearnapp2.firebasestorage.app",
+      messagingSenderId: "407239593027",
+      appId: "1:407239593027:web:39a72163f10fab75bd58f6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Setup Recaptcha
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      'size': 'normal',
+      'callback': response => {
+        // reCAPTCHA solved
+      }
+    });
+
+    function sendOTP() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+      const status = document.getElementById("status");
+
+      auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+        .then(confirmationResult => {
+          window.confirmationResult = confirmationResult;
+          status.innerText = "✅ OTP sent!";
+          document.getElementById("otp").style.display = "block";
+          document.getElementById("verifyBtn").style.display = "block";
+        })
+        .catch(error => {
+          status.innerText = "❌ " + error.message;
+          status.className = "error";
+        });
+    }
+
+    function verifyOTP() {
+      const code = document.getElementById("otp").value;
+      const status = document.getElementById("status");
+
+      confirmationResult.confirm(code)
+        .then(result => {
+          const user = result.user;
+          status.innerText = "✅ Login successful!";
+          window.location.href = "dashboard.html";  // Redirect to dashboard
+        })
+        .catch(error => {
+          status.innerText = "❌ " + error.message;
+          status.className = "error";
+        });
+    }
+  </script>
+</body>
+</html>
