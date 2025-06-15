@@ -13,7 +13,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DATA_FILE = 'data.json'
 
 # --- Helper Functions ---
-
 def load_data():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w') as f:
@@ -23,14 +22,6 @@ def load_data():
                     "admin": {
                         "password": generate_password_hash("admin123"),
                         "email": "admin@example.com",
-                        "joined": str(datetime.datetime.now()),
-                        "earnings": 0,
-                        "watched": [],
-                        "withdrawals": []
-                    },
-                    "bensonmwangi834@gmail.com": {
-                        "password": generate_password_hash("mypassword"),
-                        "email": "bensonmwangi834@gmail.com",
                         "joined": str(datetime.datetime.now()),
                         "earnings": 0,
                         "watched": [],
@@ -79,46 +70,29 @@ def index():
     visitor_count += 1
     data['visitors'] = visitor_count
     save_data(data)
-    if session.get('user') and session.pop('show_rules', False):
-        return redirect(url_for('rules_popup'))
     return render_template('index.html', videos=videos, visitors=visitor_count)
 
 @app.route('/rules-popup')
 def rules_popup():
     return render_template('rules_popup.html', rules=reward_rules)
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    if request.method == 'POST':
-        user_input = request.form['username']
-        password = request.form['password']
-
-        # Try to find user by username, email, or phone
-        user = users.get(user_input)
-        if not user:
-            for uname, u in users.items():
-                if u.get("email") == user_input or u.get("phone") == user_input:
-                    user = u
-                    user_input = uname
-                    break
-
-        if user and (password == user['password'] or check_password_hash(user['password'], password)):
-            session['user'] = user_input
-            session['show_rules'] = True
-            return redirect(url_for('index'))
-        flash("Invalid login details.")
     return render_template('login.html')
 
-@app.route('/forgot-password')
-def forgot_password():
-    flash("Password reset feature coming soon.")
-    return redirect(url_for('login'))
+@app.route('/register')
+def register():
+    return render_template('register.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for('login'))
+
+@app.route('/forgot-password')
+def forgot_password():
+    return render_template('forgot-password.html')
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -137,8 +111,6 @@ def dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
     return render_template('admin-dashboard.html', videos=videos, users=users, withdrawals=withdrawals)
-
-# Add other necessary routes like: /upload, /withdraw, /admin/review, etc.
 
 # --- Run App ---
 if __name__ == '__main__':
