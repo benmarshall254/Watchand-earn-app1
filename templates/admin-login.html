@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Login - Watch & Earn</title>
   <style>
     body {
@@ -70,20 +70,26 @@
       font-weight: bold;
     }
 
-    a {
+    .link-group {
+      margin-top: 15px;
+    }
+
+    .link-group a {
       display: block;
-      margin-top: 12px;
+      margin: 8px 0;
       color: #4a00e0;
       text-decoration: none;
       font-size: 14px;
     }
 
-    a:hover {
+    .link-group a:hover {
       text-decoration: underline;
     }
 
-    .alt-login {
-      margin-top: 20px;
+    .alt-login button {
+      margin-top: 15px;
+      background: #4a00e0;
+      width: 100%;
     }
   </style>
 </head>
@@ -103,12 +109,16 @@
       <button type="submit">Login</button>
     </form>
 
-    <a href="{{ url_for('index') }}">← Back to Home</a>
-    <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+    <div class="link-group">
+      <a href="{{ url_for('index') }}">← Back to Home</a>
+      <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+    </div>
 
     <div class="alt-login">
-      <a href="{{ url_for('choose_login') }}"><button type="button">Choose Method of Login</button></a>
+      <form action="{{ url_for('choose_login') }}">
+        <button type="submit">Choose Method of Login</button>
+      </form>
     </div>
   </div>
 </body>
-</html>
+      </html>
