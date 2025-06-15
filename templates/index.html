@@ -1,189 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Watch & Earn</title>
-
-  <!-- ✅ Favicon -->
-  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
-  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
-
-  <!-- Style -->
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9f9f9;
-      color: #333;
-    }
-    header {
-      background: #4a00e0;
-      color: white;
-      padding: 20px;
-      font-size: 1.8em;
-      text-align: center;
-      font-weight: bold;
-    }
-    .earnings {
-      padding: 15px;
-      background: #fff;
-      text-align: center;
-      font-size: 1.2em;
-      font-weight: 600;
-    }
-    .reward {
-      text-align: center;
-      background: #e0e0ff;
-      padding: 10px;
-      font-weight: bold;
-    }
-    .videos {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .video-card {
-      background: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .video-card img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .video-card h3 {
-      margin: 10px 0;
-    }
-    .video-card button {
-      padding: 10px 15px;
-      background: #4a00e0;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .video-card button:hover {
-      background: #3700b3;
-    }
-    #popupAd {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      padding: 20px;
-      border: 2px solid #ccc;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      z-index: 1000;
-      border-radius: 10px;
-      text-align: center;
-    }
-    #popupAd button {
-      background: #4a00e0;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch & Earn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">🎥 Watch & Earn</h1>
 
-  <header>🎥 Watch & Earn</header>
+        {% if session.user %}
+        <div class="mb-3">
+            <strong>Welcome, {{ session.user }}!</strong>
+            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-info">Profile</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-secondary">Logout</a>
+        </div>
+        {% else %}
+        <div class="mb-3">
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+        </div>
+        {% endif %}
 
-  <div class="earnings">
-    Your earnings: $<span id="userEarnings">{{ earnings }}</span>
-  </div>
+        <div class="mb-3">
+            <h5>Total Visitors: {{ visitors }}</h5>
+        </div>
 
-  <div class="reward" id="rewardSection" style="display: none;">
-    Daily reward countdown: <span id="rewardCountdown">60</span> seconds
-  </div>
-
-  <div class="videos">
-    {% for video in videos %}
-    <div class="video-card">
-      <img src="{{ video.thumbnail or url_for('static', filename='default_thumb.jpg') }}" alt="Thumbnail">
-      <h3>{{ video.title }}</h3>
-      <button onclick="watchVideo({{ video.id }})">▶ Watch & Earn</button>
+        <div class="row">
+            {% for video in videos %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <video controls width="100%" poster="/static/thumbnails/{{ video.thumbnail }}">
+                        <source src="/static/uploads/{{ video.filename }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        <p>💰 Earn: ${{ video.reward }}</p>
+                        <a href="/watch/{{ video.id }}" class="btn btn-success">Watch & Earn</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-    {% endfor %}
-  </div>
-
-  <!-- Ad Popup -->
-  <div id="popupAd">
-    <p><strong>🎬 Ad loading... Please wait</strong></p>
-    <button onclick="closeAdPopup()">Close Ad</button>
-  </div>
-
-  <!-- Scripts -->
-  <script>
-    let loginTimer = 0;
-    let rewardGiven = false;
-
-    function checkRewardStatus() {
-      fetch('/check-daily-reward')
-        .then(res => res.json())
-        .then(data => {
-          if (!data.claimed) {
-            document.getElementById("rewardSection").style.display = "block";
-            startCountdown();
-          }
-        });
-    }
-
-    function startCountdown() {
-      const interval = setInterval(() => {
-        loginTimer++;
-        document.getElementById('rewardCountdown').textContent = 60 - loginTimer;
-
-        if (loginTimer === 30) {
-          document.getElementById('popupAd').style.display = 'block';
-        }
-
-        if (loginTimer >= 60 && !rewardGiven) {
-          rewardGiven = true;
-          fetch('/claim-daily-reward')
-            .then(res => res.json())
-            .then(data => {
-              alert('🎉 Daily reward earned: $' + data.reward);
-              document.getElementById('userEarnings').textContent = parseFloat(data.total).toFixed(2);
-              document.getElementById("rewardSection").style.display = "none";
-              document.getElementById('popupAd').style.display = 'none';
-            })
-            .catch(() => alert('⚠️ Failed to claim reward.'));
-          clearInterval(interval);
-        }
-      }, 1000);
-
-      window.onbeforeunload = () => {
-        if (!rewardGiven) alert('⚠️ You left before completing 60 seconds!');
-      };
-    }
-
-    function closeAdPopup() {
-      document.getElementById('popupAd').style.display = 'none';
-    }
-
-    function watchVideo(id) {
-      window.location.href = '/watch/' + id;
-    }
-
-    window.onload = checkRewardStatus;
-  </script>
-
 </body>
 </html>
