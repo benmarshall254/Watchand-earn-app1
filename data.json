@@ -6,14 +6,14 @@
       "title": "Welcome to Watch & Earn",
       "filename": "welcome.mp4",
       "thumbnail": "thumb1.jpg",
-      "reward": 0.0001
+      "reward": 0.01
     },
     {
       "id": "2",
       "title": "Learn & Earn Tips",
       "filename": "tips.mp4",
       "thumbnail": "thumb2.jpg",
-      "reward": 0.0001
+      "reward": 0.01
     }
   ],
   "users": {
@@ -24,11 +24,22 @@
       "last_reward_time": 0,
       "last_login_date": "",
       "daily_rewarded": false
+    },
+    "testuser": {
+      "password": "test123",
+      "earnings": 0,
+      "watched": [],
+      "last_reward_time": 0,
+      "last_login_date": "",
+      "daily_rewarded": false
     }
   },
   "withdrawals": [],
   "daily_logins": {},
   "ad_clicks": 0,
-  "daily_login_reward": 0.005,
-  "campaigns": []
+  "daily_login_reward": 0.5,
+  "min_withdraw_amount": 150.0,
+  "watch_reward_amount": 0.01,
+  "campaigns": [],
+  "youtuber_requests": []
 }
