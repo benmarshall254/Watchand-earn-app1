@@ -82,7 +82,7 @@
     </div>
 
     <a href="{{ url_for('forgot_password') }}" class="forgot-link">Forgot password?</a>
-    <a href="{{ url_for('login') }}" class="register-link">Choose another login method</a>
+    <a href="{{ url_for('register') }}" class="register-link">Don't have an account? Register</a>
 
     <div id="login-error" class="error-message"></div>
   </div>
@@ -105,8 +105,21 @@
       const errorDiv = document.getElementById("login-error");
 
       auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          window.location.href = "/";  // Redirect to home
+        .then((userCredential) => {
+          // Start Flask session after Firebase login
+          fetch('/session-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'email=' + encodeURIComponent(email)
+          }).then(res => {
+            if (res.ok) {
+              window.location.href = '/';
+            } else {
+              errorDiv.innerText = "Login session failed. Please try again.";
+            }
+          });
         })
         .catch((error) => {
           errorDiv.innerText = "❌ " + error.message;
@@ -117,7 +130,20 @@
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
         .then(result => {
-          window.location.href = "/";
+          const email = result.user.email;
+          fetch('/session-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'email=' + encodeURIComponent(email)
+          }).then(res => {
+            if (res.ok) {
+              window.location.href = '/';
+            } else {
+              document.getElementById("login-error").innerText = "❌ Google login session failed.";
+            }
+          });
         })
         .catch(error => {
           document.getElementById("login-error").innerText = "❌ " + error.message;
