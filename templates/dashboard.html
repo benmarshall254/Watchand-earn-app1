@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Watch & Earn</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -13,118 +13,151 @@
             <a href="{{ url_for('logout') }}">🚪 Logout</a>
             <a href="{{ url_for('edit_rules') }}">📜 Edit Rules</a>
             <a href="{{ url_for('change_password') }}">🔒 Change Password</a>
+            <a href="{{ url_for('download_reports') }}">📥 Download Reports</a>
         </nav>
-    </header>
+    </header><section class="stats">
+    <h2>📊 Platform Stats</h2>
+    <ul>
+        <li>Total Visitors: {{ visitors }}</li>
+        <li>Total Users: {{ users|length }}</li>
+        <li>Pending Withdrawals: {{ withdrawals|selectattr('status', 'equalto', 'pending')|list|length }}</li>
+        <li>Total Paid Out: ${{ total_paid }}</li>
+        <li>Total Revenue: ${{ total_revenue }}</li>
+        <li>Profit: ${{ profit }}</li>
+    </ul>
+</section>
 
-    <section class="stats">
-        <h2>📊 Platform Stats</h2>
-        <ul>
-            <li>Total Visitors: {{ visitors }}</li>
-            <li>Total Users: {{ users|length }}</li>
-            <li>Pending Withdrawals: {{ withdrawals|selectattr('status', 'equalto', 'pending')|list|length }}</li>
-        </ul>
-    </section>
-
-    <section class="settings">
-        <h2>⚙️ Reward Settings</h2>
-        <form method="POST">
-            <label>Minimum Withdraw ($):</label>
-            <input type="number" name="min_withdraw_amount" step="0.01" value="{{ settings.min_withdraw_amount }}">
-
-            <label>Daily Login Reward ($):</label>
-            <input type="number" name="daily_login_reward" step="0.001" value="{{ settings.daily_login_reward }}">
-
-            <label>Watch Reward per Minute ($):</label>
-            <input type="number" name="watch_reward_amount" step="0.001" value="{{ settings.watch_reward_amount }}">
-
-            <button type="submit">💾 Save Settings</button>
-        </form>
-    </section>
-
-    <section class="upload">
-        <h2>📤 Upload New MP4 Video</h2>
-        <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
-            <input type="text" name="title" placeholder="Video Title" required>
-            <input type="file" name="video" accept="video/mp4" required>
-            <button type="submit">Upload MP4</button>
-        </form>
-    </section>
-
-    <section class="upload">
-        <h2>🔗 Add YouTube Video Link</h2>
-        <form method="POST" action="{{ url_for('submit_video') }}">
-            <input type="text" name="title" placeholder="Video Title" required>
-            <input type="text" name="link" placeholder="YouTube Link" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="number" name="views" placeholder="Target Views" required>
-            <button type="submit">Add Campaign</button>
-        </form>
-    </section>
-
-    <section class="users">
-        <h2>👥 User Earnings</h2>
-        <input type="text" id="searchBox" placeholder="Search user...">
-        <ul id="userList">
-            {% for name, u in users|dictsort(false, attribute='1.earnings')|reverse %}
-                {% if name != 'admin' %}
-                    <li><strong>{{ name }}</strong>: ${{ '%.4f' % u.earnings }}</li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </section>
-
-    <section class="withdrawals">
-        <h2>💰 Withdrawal Requests</h2>
-        {% for i, w in enumerate(withdrawals) %}
-            <div class="withdraw-card">
-                <p>User: <strong>{{ w.username }}</strong></p>
-                <p>Amount: ${{ w.amount }}</p>
-                <p>Status: {{ w.status }}</p>
-                {% if w.status == 'pending' %}
-                    <form method="POST" action="{{ url_for('approve_withdraw', index=i) }}">
-                        <button type="submit">✅ Approve</button>
-                    </form>
-                    <form method="POST" action="{{ url_for('reject_withdraw', index=i) }}">
-                        <button type="submit">❌ Reject</button>
-                    </form>
-                {% endif %}
-            </div>
-        {% else %}
-            <p>No withdrawal requests yet.</p>
-        {% endfor %}
-    </section>
-
-    <section class="campaigns">
-        <h2>📺 YouTube Campaigns</h2>
-        {% for campaign in youtuber_requests %}
-            <div class="campaign-card">
-                <p><strong>{{ campaign.title }}</strong></p>
-                <p>Link: <a href="{{ campaign.link }}" target="_blank">{{ campaign.link }}</a></p>
-                <p>Email: {{ campaign.email }}</p>
-                <p>Target Views: {{ campaign.views }}</p>
-                <p>Status: {{ campaign.status }}</p>
-            </div>
-        {% else %}
-            <p>No campaigns submitted yet.</p>
-        {% endfor %}
-    </section>
-
-    <footer>
-        <p>&copy; {{ 2025 }} Watch & Earn. Admin Control Panel.</p>
-    </footer>
-
+<section>
+    <canvas id="growthChart" width="400" height="150"></canvas>
     <script>
-        const searchBox = document.getElementById('searchBox');
-        const userList = document.getElementById('userList');
-
-        searchBox.addEventListener('input', function () {
-            const search = this.value.toLowerCase();
-            const users = userList.querySelectorAll('li');
-            users.forEach(u => {
-                const name = u.textContent.toLowerCase();
-                u.style.display = name.includes(search) ? '' : 'none';
-            });
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ user_growth_dates }},
+                datasets: [{
+                    label: 'User Growth',
+                    data: {{ user_growth_counts }},
+                    borderColor: 'blue',
+                    fill: false
+                }, {
+                    label: 'Withdrawals',
+                    data: {{ withdrawal_amounts }},
+                    borderColor: 'red',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
         });
     </script>
+</section>
+
+<section class="settings">
+    <h2>⚙️ Reward Settings</h2>
+    <form method="POST">
+        <label>Minimum Withdraw ($):</label>
+        <input type="number" name="min_withdraw_amount" step="0.01" value="{{ settings.min_withdraw_amount }}">
+
+        <label>Daily Login Reward ($):</label>
+        <input type="number" name="daily_login_reward" step="0.001" value="{{ settings.daily_login_reward }}">
+
+        <label>Watch Reward per Minute ($):</label>
+        <input type="number" name="watch_reward_amount" step="0.001" value="{{ settings.watch_reward_amount }}">
+
+        <button type="submit">💾 Save Settings</button>
+    </form>
+</section>
+
+<section class="upload">
+    <h2>📤 Upload New MP4 Video</h2>
+    <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+        <input type="text" name="title" placeholder="Video Title" required>
+        <input type="file" name="video" accept="video/mp4" required>
+        <button type="submit">Upload MP4</button>
+    </form>
+</section>
+
+<section class="upload">
+    <h2>🔗 Add YouTube Video Link</h2>
+    <form method="POST" action="{{ url_for('submit_video') }}">
+        <input type="text" name="title" placeholder="Video Title" required>
+        <input type="text" name="link" placeholder="YouTube Link" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="number" name="views" placeholder="Target Views" required>
+        <button type="submit">Add Campaign</button>
+    </form>
+</section>
+
+<section class="users">
+    <h2>👥 User Earnings</h2>
+    <input type="text" id="searchBox" placeholder="Search user...">
+    <ul id="userList">
+        {% for name, u in users|dictsort(false, attribute='1.earnings')|reverse %}
+            {% if name != 'admin' %}
+                <li><strong>{{ name }}</strong>: ${{ '%.4f' % u.earnings }} - {{ 'Inactive' if u.inactive else 'Active' }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="withdrawals">
+    <h2>💰 Withdrawal Requests</h2>
+    {% for i, w in enumerate(withdrawals) %}
+        <div class="withdraw-card">
+            <p>User: <strong>{{ w.username }}</strong></p>
+            <p>Amount: ${{ w.amount }}</p>
+            <p>Status: {{ w.status }}</p>
+            {% if w.status == 'pending' %}
+                <form method="POST" action="{{ url_for('approve_withdraw', index=i) }}">
+                    <button type="submit">✅ Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('reject_withdraw', index=i) }}">
+                    <button type="submit">❌ Reject</button>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No withdrawal requests yet.</p>
+    {% endfor %}
+</section>
+
+<section class="campaigns">
+    <h2>📺 YouTube Campaigns</h2>
+    {% for campaign in youtuber_requests %}
+        <div class="campaign-card">
+            <p><strong>{{ campaign.title }}</strong></p>
+            <p>Link: <a href="{{ campaign.link }}" target="_blank">{{ campaign.link }}</a></p>
+            <p>Email: {{ campaign.email }}</p>
+            <p>Target Views: {{ campaign.views }}</p>
+            <p>Status: {{ campaign.status }}</p>
+        </div>
+    {% else %}
+        <p>No campaigns submitted yet.</p>
+    {% endfor %}
+</section>
+
+<footer>
+    <p>&copy; {{ 2025 }} Watch & Earn. Admin Control Panel.</p>
+</footer>
+
+<script>
+    const searchBox = document.getElementById('searchBox');
+    const userList = document.getElementById('userList');
+
+    searchBox.addEventListener('input', function () {
+        const search = this.value.toLowerCase();
+        const users = userList.querySelectorAll('li');
+        users.forEach(u => {
+            const name = u.textContent.toLowerCase();
+            u.style.display = name.includes(search) ? '' : 'none';
+        });
+    });
+</script>
+
 </body>
 </html>
