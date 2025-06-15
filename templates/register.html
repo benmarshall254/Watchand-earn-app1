@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
   <style>
     body {
       background: linear-gradient(135deg, #43cea2, #185a9d);
@@ -100,11 +101,11 @@
 
     <div id="feedback" class="message"></div>
 
-    <a href="login.html" class="login-link">Already have an account? Log in</a>
+    <a href="{{ url_for('login') }}" class="login-link">Already have an account? Log in</a>
   </div>
 
   <script>
-    // Firebase configuration
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBIC0u1HfE3aqI-_2aMJT9AKRqUEjlTEJ8",
       authDomain: "watchtoearnapp2.firebaseapp.com",
@@ -116,42 +117,81 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Email registration
+    // Register with email & password
     function registerUser() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
       const feedback = document.getElementById("feedback");
 
+      feedback.innerText = "⏳ Creating account...";
+      feedback.className = "message";
+
+      if (!email || !password) {
+        feedback.innerText = "⚠️ Please fill all fields.";
+        feedback.className = "message error";
+        return;
+      }
+
       if (password.length < 6) {
-        feedback.innerHTML = "⚠️ Password must be at least 6 characters.";
+        feedback.innerText = "⚠️ Password must be at least 6 characters.";
         feedback.className = "message error";
         return;
       }
 
       auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
-          feedback.innerHTML = "✅ Registration successful! Redirecting...";
-          feedback.className = "message success";
-          setTimeout(() => window.location.href = "index.html", 2000);
+          // Start Flask session
+          fetch('/session-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'email=' + encodeURIComponent(email)
+          }).then(res => {
+            if (res.ok) {
+              feedback.innerText = "✅ Account created! Redirecting...";
+              feedback.className = "message success";
+              setTimeout(() => window.location.href = "/", 2000);
+            } else {
+              feedback.innerText = "⚠️ Session failed. Try login.";
+              feedback.className = "message error";
+            }
+          });
         })
         .catch((error) => {
-          feedback.innerHTML = "⚠️ " + error.message;
+          feedback.innerText = "⚠️ " + error.message;
           feedback.className = "message error";
         });
     }
 
-    // Google sign-in
+    // Register with Google
     function registerWithGoogle() {
+      const feedback = document.getElementById("feedback");
       const provider = new firebase.auth.GoogleAuthProvider();
+
       auth.signInWithPopup(provider)
-        .then((result) => {
-          document.getElementById("feedback").innerHTML = "✅ Google login successful! Redirecting...";
-          document.getElementById("feedback").className = "message success";
-          setTimeout(() => window.location.href = "index.html", 2000);
+        .then(result => {
+          const email = result.user.email;
+          fetch('/session-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'email=' + encodeURIComponent(email)
+          }).then(res => {
+            if (res.ok) {
+              feedback.innerText = "✅ Google login successful! Redirecting...";
+              feedback.className = "message success";
+              setTimeout(() => window.location.href = "/", 2000);
+            } else {
+              feedback.innerText = "⚠️ Session failed. Try login.";
+              feedback.className = "message error";
+            }
+          });
         })
-        .catch((error) => {
-          document.getElementById("feedback").innerHTML = "⚠️ " + error.message;
-          document.getElementById("feedback").className = "message error";
+        .catch(error => {
+          feedback.innerText = "⚠️ " + error.message;
+          feedback.className = "message error";
         });
     }
   </script>
