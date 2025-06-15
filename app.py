@@ -9,7 +9,6 @@ app.secret_key = 'admin123'
 
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 DATA_FILE = 'data.json'
 
 # --- Helper Functions ---
@@ -32,33 +31,31 @@ def save_rules(new_rules):
     with open('rules.txt', 'w') as f:
         f.write('\n'.join(new_rules))
 
-# --- Load data on startup ---
+# --- Load Data on Startup ---
 data = load_data()
 videos = data['videos']
 users = data['users']
 visitor_count = data['visitors']
 withdrawals = data['withdrawals']
+youtuber_requests = data.get('youtuber_requests', [])
 settings = {
     'min_withdraw_amount': data.get('min_withdraw_amount', 150.0),
     'daily_login_reward': data.get('daily_login_reward', 0.5),
     'watch_reward_amount': data.get('watch_reward_amount', 0.01)
 }
 
-# --- Routes ---
-
+# --- Home ---
 @app.route('/')
 def index():
     global visitor_count
     visitor_count += 1
     data['visitors'] = visitor_count
     save_data(data)
-
     if session.get('user') and session.pop('show_rules', False):
         return redirect(url_for('rules_popup'))
-
     return render_template('index.html', videos=videos, visitors=visitor_count)
 
-# --- User Login ---
+# --- Login ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -95,7 +92,7 @@ def logout():
     flash("Logged out successfully.")
     return redirect(url_for('login'))
 
-# --- Dashboard ---
+# --- Admin Dashboard ---
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if not session.get('admin'):
@@ -106,19 +103,23 @@ def dashboard():
             settings['min_withdraw_amount'] = float(request.form['min_withdraw_amount'])
             settings['daily_login_reward'] = float(request.form['daily_login_reward'])
             settings['watch_reward_amount'] = float(request.form['watch_reward_amount'])
-
             data['min_withdraw_amount'] = settings['min_withdraw_amount']
             data['daily_login_reward'] = settings['daily_login_reward']
             data['watch_reward_amount'] = settings['watch_reward_amount']
             save_data(data)
-
             flash("Settings updated successfully!")
         except ValueError:
             flash("Invalid input! Please enter valid numbers.")
 
-    return render_template('dashboard.html', videos=videos, visitors=visitor_count, settings=settings, withdrawals=withdrawals)
+    return render_template('dashboard.html',
+        videos=videos,
+        visitors=visitor_count,
+        settings=settings,
+        withdrawals=withdrawals,
+        youtuber_requests=youtuber_requests
+    )
 
-# --- Upload Video ---
+# --- Upload Video (Admin Only) ---
 @app.route('/upload', methods=['POST'])
 def upload():
     if not session.get('admin'):
@@ -148,7 +149,7 @@ def upload():
     flash(f"Video '{title}' uploaded successfully!")
     return redirect(url_for('dashboard'))
 
-# --- Withdraw Management ---
+# --- Withdraw Approve/Reject ---
 @app.route('/withdraw/<int:index>/approve', methods=['POST'])
 def approve_withdraw(index):
     if session.get('admin'):
@@ -169,7 +170,7 @@ def reject_withdraw(index):
 def withdrawal_count():
     return jsonify({'count': len(withdrawals)})
 
-# --- Admin Password Change ---
+# --- Admin Change Password ---
 @app.route('/admin/password', methods=['GET', 'POST'])
 def change_password():
     if not session.get('admin'):
@@ -179,10 +180,8 @@ def change_password():
         current = request.form['current_password']
         new = request.form['new_password']
         stored = users['admin']['password']
-
         if current == stored or check_password_hash(stored, current):
-            hashed = generate_password_hash(new)
-            users['admin']['password'] = hashed
+            users['admin']['password'] = generate_password_hash(new)
             save_data(data)
             flash("Password changed successfully.")
         else:
@@ -191,7 +190,7 @@ def change_password():
 
     return render_template('password.html')
 
-# --- Rules Popup Route ---
+# --- Rules Display (Popup) ---
 @app.route('/rules-popup')
 def rules_popup():
     rule_lines = load_rules()
@@ -211,6 +210,42 @@ def edit_rules():
 
     current_rules = '\n'.join(load_rules())
     return render_template('edit_rules.html', rules=current_rules)
+
+# --- ✅ New: User Profile Page ---
+@app.route('/profile')
+def profile():
+    if not session.get('user'):
+        return redirect(url_for('login'))
+
+    username = session['user']
+    user_data = users.get(username, {})
+    return render_template('profile.html', user=user_data)
+
+# --- ✅ New: YouTuber Submission Page ---
+@app.route('/submit-video', methods=['GET', 'POST'])
+def submit_video():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        link = request.form.get('link')
+        email = request.form.get('email')
+        views = request.form.get('views')
+        youtuber_requests.append({
+            'title': title,
+            'link': link,
+            'email': email,
+            'views': views,
+            'status': 'pending'
+        })
+        data['youtuber_requests'] = youtuber_requests
+        save_data(data)
+        flash("Submission received! We will contact you.")
+        return redirect(url_for('submit_video'))
+    return render_template('submit_video.html')
+
+# --- ✅ New: Payment Page (M-Pesa or PayPal) ---
+@app.route('/pay')
+def pay():
+    return render_template('pay.html')
 
 # --- Run App ---
 if __name__ == '__main__':
