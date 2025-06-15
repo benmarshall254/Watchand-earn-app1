@@ -17,7 +17,21 @@ DATA_FILE = 'data.json'
 def load_data():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w') as f:
-            json.dump({"videos": [], "users": {"admin": {"password": generate_password_hash("admin123")}}, "visitors": 0, "withdrawals": []}, f)
+            json.dump({
+                "videos": [],
+                "users": {
+                    "admin": {
+                        "password": generate_password_hash("admin123")
+                    }
+                },
+                "visitors": 0,
+                "withdrawals": [],
+                "youtuber_requests": [],
+                "daily_logins": {},
+                "min_withdraw_amount": 150.0,
+                "daily_login_reward": 0.5,
+                "watch_reward_amount": 0.01
+            }, f)
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
 
