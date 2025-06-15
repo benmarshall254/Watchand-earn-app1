@@ -25,7 +25,8 @@
       "last_login_date": "",
       "daily_rewarded": false,
       "joined": "2025-06-01",
-      "withdrawals": []
+      "withdrawals": [],
+      "email": "admin@example.com"
     },
     "testuser": {
       "password": "test123",
@@ -36,6 +37,17 @@
       "daily_rewarded": false,
       "joined": "2025-06-01",
       "withdrawals": []
+    },
+    "bensonmwangi834@gmail.com": {
+      "password": "$pbkdf2-sha256$29000$mHts7ZrQuJoKh.MYdDHFUQ$HQVZ/1GLk4FhlHPXzFnxQl0TRFnf65RUs2Y5vMZZ0vQ",  
+      "earnings": 0,
+      "watched": [],
+      "last_reward_time": 0,
+      "last_login_date": "",
+      "daily_rewarded": false,
+      "joined": "2025-06-15",
+      "withdrawals": [],
+      "email": "bensonmwangi834@gmail.com"
     }
   },
   "withdrawals": [],
