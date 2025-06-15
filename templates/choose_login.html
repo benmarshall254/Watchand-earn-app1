@@ -5,6 +5,10 @@
   <title>Choose Login - Watch & Earn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -50,7 +54,17 @@
       background-color: #0072ff;
     }
 
-    .login-options .home-link {
+    .google-btn {
+      background: #fff;
+      color: #444;
+      border: 1px solid #ccc;
+    }
+
+    .google-btn:hover {
+      background: #f1f1f1;
+    }
+
+    .home-link {
       margin-top: 15px;
       display: inline-block;
       text-decoration: none;
@@ -58,8 +72,14 @@
       font-weight: bold;
     }
 
-    .login-options .home-link:hover {
+    .home-link:hover {
       text-decoration: underline;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-size: 14px;
+      color: green;
     }
   </style>
 </head>
@@ -68,7 +88,37 @@
     <h2>🔐 Choose Login Method</h2>
     <button onclick="location.href='login.html'">📧 Login with Email</button>
     <button onclick="location.href='login_with_phone.html'">📱 Login with Phone</button>
+    <button class="google-btn" onclick="loginWithGoogle()">🔓 Sign in with Google</button>
     <a href="index.html" class="home-link">🏠 Back to Home</a>
+    <div class="feedback" id="googleFeedback"></div>
   </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyy6VpTtlKpAEf0nA6wRzpLpfeXRz9Qvk",
+      authDomain: "watchtoearnapp2.firebaseapp.com",
+      projectId: "watchtoearnapp2",
+      storageBucket: "watchtoearnapp2.appspot.com",
+      messagingSenderId: "407239593027",
+      appId: "1:407239593027:web:39a72163f10fab75bd58f6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          document.getElementById("googleFeedback").textContent = "✅ Login successful! Redirecting...";
+          setTimeout(() => {
+            window.location.href = "dashboard";  // redirect to dashboard after login
+          }, 1500);
+        })
+        .catch((error) => {
+          document.getElementById("googleFeedback").textContent = "⚠️ " + error.message;
+        });
+    }
+  </script>
 </body>
 </html>
