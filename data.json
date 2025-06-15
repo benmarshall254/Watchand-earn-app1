@@ -23,7 +23,9 @@
       "watched": [],
       "last_reward_time": 0,
       "last_login_date": "",
-      "daily_rewarded": false
+      "daily_rewarded": false,
+      "joined": "2025-06-01",
+      "withdrawals": []
     },
     "testuser": {
       "password": "test123",
@@ -31,7 +33,9 @@
       "watched": [],
       "last_reward_time": 0,
       "last_login_date": "",
-      "daily_rewarded": false
+      "daily_rewarded": false,
+      "joined": "2025-06-01",
+      "withdrawals": []
     }
   },
   "withdrawals": [],
@@ -41,5 +45,14 @@
   "min_withdraw_amount": 150.0,
   "watch_reward_amount": 0.01,
   "campaigns": [],
-  "youtuber_requests": []
+  "youtuber_requests": [],
+  "reward_rules": [
+    "Time-based earnings start after 30 seconds of watching.",
+    "Daily login rewards are earned after 60 seconds online.",
+    "Reward Rules are shown in three places and are editable by Ben."
+  ],
+  "settings": {
+    "enable_rewards": true,
+    "maintenance_mode": false
+  }
 }
