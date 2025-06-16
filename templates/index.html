@@ -20,27 +20,29 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
     header h1 {
       margin: 0;
+      font-size: 1.5rem;
     }
     header a {
       color: #fff;
       text-decoration: none;
-      margin-left: 10px;
+      margin-left: 15px;
+      font-size: 0.95rem;
     }
     main {
       padding: 1.5rem;
     }
     section {
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
     .video-card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 10px;
       padding: 1rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       width: 320px;
     }
     .video-grid {
@@ -48,17 +50,55 @@
       flex-wrap: wrap;
       gap: 20px;
     }
+    .video-card h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      color: #004466;
+    }
+    video {
+      border-radius: 8px;
+      width: 100%;
+    }
+    .video-card p {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    .video-card strong {
+      color: #00aa66;
+    }
+    .rules-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      background: #004466;
+      color: #fff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
     footer {
       background-color: #004466;
       color: #fff;
       text-align: center;
       padding: 1rem;
-      position: relative;
-      bottom: 0;
-      width: 100%;
+      margin-top: 40px;
     }
     .profile-icon {
       font-size: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .video-card {
+        width: 100%;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      header div {
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
@@ -67,7 +107,7 @@
     <h1>🎥 Watch & Earn</h1>
     <div>
       {% if session.get('firebase_user') %}
-        <a href="{{ url_for('profile') }}" class="profile-icon">👤 Profile</a>
+        <a href="{{ url_for('profile') }}">👤 Profile</a>
         <a href="{{ url_for('logout') }}">🚪 Logout</a>
       {% elif session.get('admin') %}
         <a href="{{ url_for('dashboard') }}">📊 Dashboard</a>
@@ -82,7 +122,7 @@
   <main>
     <section>
       <h2>📋 Reward Rules</h2>
-      <a href="{{ url_for('rules_popup') }}">👉 View Reward Rules</a>
+      <a class="rules-link" href="{{ url_for('rules_popup') }}">👉 View Reward Rules</a>
     </section>
 
     <section>
@@ -90,14 +130,16 @@
       {% if videos %}
         <div class="video-grid">
           {% for video in videos %}
+            {% if video.show_on_index %}
             <div class="video-card">
               <h3>{{ video.title }}</h3>
-              <video width="100%" controls>
+              <video controls>
                 <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
-              <p>💰 Reward: <strong>${{ video.reward }}</strong></p>
+              <p>💰 Reward: <strong>${{ '%.4f' % video.reward }}</strong></p>
             </div>
+            {% endif %}
           {% endfor %}
         </div>
       {% else %}
