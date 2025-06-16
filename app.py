@@ -23,7 +23,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'bensonmwangi834@gmail.com'
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your_app_password_here')  # set via Render.com
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'your_app_password_here')
 mail = Mail(app)
 
 # === Load / Save Data ===
@@ -121,9 +121,29 @@ def session_login():
     try:
         user = auth.sign_in_with_email_and_password(email, password)
         session['firebase_user'] = email
+        now = str(datetime.datetime.now())
+        if email not in users:
+            users[email] = {
+                "email": email,
+                "joined": now,
+                "earnings": 0,
+                "watched": [],
+                "withdrawals": []
+            }
+        save_data(data)
         return jsonify({'message': 'Logged in successfully'}), 200
-    except:
-        return jsonify({'error': 'Invalid credentials'}), 401
+    except Exception as e:
+        return jsonify({'error': f'Login failed: {str(e)}'}), 401
+
+@app.route('/session-register', methods=['POST'])
+def session_register():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    try:
+        auth.create_user_with_email_and_password(email, password)
+        return jsonify({'message': 'Account created successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': f'Registration failed: {str(e)}'}), 400
 
 @app.route('/logout')
 def logout():
@@ -227,6 +247,17 @@ def send_welcome(email):
         return f"Email sent to {email}"
     except Exception as e:
         return f"Error sending email: {str(e)}"
+
+@app.route('/update-reward-rules', methods=['POST'])
+def update_reward_rules():
+    if not session.get('admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    rules = request.json.get('rules')
+    if isinstance(rules, list):
+        data['reward_rules'] = rules
+        save_data(data)
+        return jsonify({'message': 'Reward rules updated'})
+    return jsonify({'error': 'Invalid format'}), 400
 
 @app.errorhandler(404)
 def not_found(e):
