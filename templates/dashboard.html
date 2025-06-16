@@ -76,6 +76,12 @@
     .btn-lock { background: #ffaa00; color: white; }
     .btn-approve { background: #0066cc; color: white; }
     .btn-reject { background: #cc0033; color: white; }
+    .user-rank {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
     footer {
       text-align: center;
       padding: 20px;
@@ -103,6 +109,7 @@
     <a href="/edit-rules">Edit Rules</a>
     <a href="/change-password">Change Password</a>
     <a href="/download-report">Download Report</a>
+    <a href="{{ url_for('admin_users') }}">👤 Manage Users</a>
     <a href="/logout">Logout</a>
   </div>
 </nav>
@@ -117,7 +124,7 @@
     <div class="stat-card"><i class="fas fa-dollar-sign"></i><h3>${{ withdrawals|selectattr('status', 'equalto', 'approved')|map(attribute='amount')|sum }}</h3><p>Total Paid Out</p></div>
     <div class="stat-card"><i class="fas fa-chart-line"></i><h3>${{ total_revenue }}</h3><p>Total Revenue</p></div>
     <div class="stat-card"><i class="fas fa-piggy-bank"></i><h3>${{ profit }}</h3><p>Profit</p></div>
-    <div class="stat-card"><i class="fas fa-video"></i><h3 id="totalVideos">{{ videos|length }}</h3><p>Total Videos</p></div>
+    <div class="stat-card"><i class="fas fa-video"></i><h3>{{ videos|length }}</h3><p>Total Videos</p></div>
   </div>
 
   <div class="flex-grid">
@@ -291,7 +298,6 @@
 <script>
   function hideAll() {
     alert('This will trigger backend logic to hide all videos from index.');
-    // Ideally should call a route like: fetch("/hide_all_index_videos", { method: "POST" });
   }
 </script>
 
