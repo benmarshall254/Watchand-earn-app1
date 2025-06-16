@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - User Manager</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h2>👤 Admin User Management</h2>
+
+    <form method="POST">
+        <input type="email" name="email" placeholder="New user email" required>
+        <input type="password" name="password" placeholder="New user password" required>
+        <button type="submit">Create User</button>
+    </form>
+
+    <h3>📋 Registered Users</h3>
+    <ul>
+        {% for email, info in users.items() %}
+            <li><strong>{{ email }}</strong> — Joined: {{ info.joined }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{{ url_for('dashboard') }}">🔙 Back to Dashboard</a></p>
+</body>
+</html>
