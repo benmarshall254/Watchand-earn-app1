@@ -3,21 +3,46 @@
 <head>
   <title>Withdraw Earnings - Watch & Earn</title>
   <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f2f2f2;
+    }
+    input, select, button {
+      padding: 10px;
+      margin-top: 5px;
+      width: 300px;
+    }
+    label {
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <h2>💸 Withdraw Your Earnings</h2>
   <p><strong>Minimum Withdrawal:</strong> ${{ settings.min_withdraw_amount }}</p>
-  <p><strong>Your Current Balance:</strong> ${{ '%.2f' % earnings }}</p>
+  <p><strong>Your Current Balance:</strong> ${{ '%.2f' % info.earnings }}</p>
 
   <form method="post" action="{{ url_for('withdraw') }}">
-    <label>Email for Payment:</label><br>
-    <input type="email" name="email" required><br><br>
-
-    <label>Payment Method:</label><br>
-    <select name="method">
+    <label>Choose Payment Method:</label><br>
+    <select name="method" id="method" onchange="toggleFields()" required>
       <option value="paypal">PayPal</option>
       <option value="mpesa">M-Pesa</option>
     </select><br><br>
+
+    <div id="paypalField">
+      <label>PayPal Email:</label><br>
+      <input type="email" name="account" placeholder="your@email.com"><br><br>
+    </div>
+
+    <div id="mpesaField" style="display: none;">
+      <label>M-Pesa Phone Number:</label><br>
+      <input type="text" name="account" placeholder="07XXXXXXXX"><br><br>
+    </div>
+
+    <label>Withdrawal Amount ($):</label><br>
+    <input type="number" name="amount" min="1" step="0.01" required><br><br>
 
     <button type="submit">Request Withdrawal</button>
   </form>
@@ -25,7 +50,22 @@
   {% if message %}
     <p style="color: green;">{{ message }}</p>
   {% endif %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p style="color: green;">{{ msg }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-  <a href="{{ url_for('index') }}">⬅ Back to Home</a>
+  <br><a href="{{ url_for('index') }}">⬅ Back to Home</a>
+
+  <script>
+    function toggleFields() {
+      const method = document.getElementById("method").value;
+      document.getElementById("paypalField").style.display = method === "paypal" ? "block" : "none";
+      document.getElementById("mpesaField").style.display = method === "mpesa" ? "block" : "none";
+    }
+  </script>
 </body>
 </html>
