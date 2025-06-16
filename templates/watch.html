@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6,37 +7,49 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <script>
     let timer;
-    let secondsWatched = 0;function startTimer() {
-  timer = setInterval(() => {
-    secondsWatched++;
-    document.getElementById("timer").innerText = secondsWatched + "s";
+    let secondsWatched = 0;
+    function startTimer() {
+      timer = setInterval(() => {
+        secondsWatched++;
+        document.getElementById("timer").innerText = secondsWatched + "s";
 
-    if (secondsWatched >= 30) {
-      clearInterval(timer);
-      document.getElementById("rewardForm").style.display = 'block';
+        if (secondsWatched >= 30) {
+          clearInterval(timer);
+          document.getElementById("rewardForm").style.display = 'block';
+        }
+      }, 1000);
     }
-  }, 1000);
-}
-
   </script>
 </head>
 <body onload="startTimer()">
   <div class="container py-4">
-    <h2 class="text-center mb-4">🎬 {{ video.title }}</h2><div class="text-center">
-  <video width="100%" height="auto" controls autoplay>
-    <source src="/static/uploads/{{ video.filename }}" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
+    <h2 class="text-center mb-4">🎬 {{ video.title }}</h2>
 
-<div class="text-center mt-4">
-  <p>⏱️ Watch time: <span id="timer">0s</span></p>
+    <!-- Show user email if it's bensonmwangi834@gmail.com -->
+    {% if session.get('firebase_user') == 'bensonmwangi834@gmail.com' %}
+      <div class="alert alert-info text-center">
+        Logged in as: <strong>bensonmwangi834@gmail.com</strong>
+      </div>
+    {% elif session.get('firebase_user') %}
+      <div class="alert alert-secondary text-center">
+        Logged in as: <strong>{{ session.get('firebase_user') }}</strong>
+      </div>
+    {% endif %}
 
-  <form id="rewardForm" action="/reward/{{ video.id }}" method="POST" style="display: none">
-    <button class="btn btn-success">Claim ${{ video.reward }} Reward</button>
-  </form>
-</div>
+    <div class="text-center">
+      <video width="100%" height="auto" controls autoplay>
+        <source src="/static/uploads/{{ video.filename }}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
 
+    <div class="text-center mt-4">
+      <p>⏱️ Watch time: <span id="timer">0s</span></p>
+
+      <form id="rewardForm" action="/reward/{{ video.id }}" method="POST" style="display: none">
+        <button class="btn btn-success">Claim ${{ video.reward }} Reward</button>
+      </form>
+    </div>
   </div>
 </body>
 </html>
